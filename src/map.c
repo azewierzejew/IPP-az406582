@@ -2,6 +2,10 @@
 
 #include <stdbool.h>
 
+struct Map {
+
+};
+
 
 Map *newMap() {
 
