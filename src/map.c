@@ -1,36 +1,45 @@
 #include "map.h"
 #include "set.h"
+#include "list.h"
+#include "dict.h"
 
 #include <stdbool.h>
+#include <stdlib.h>
 
-typedef struct RoadStruct Road;
+typedef struct RoadStruct *Road;
+typedef struct CityStruct *City;
+typedef struct RouteStruct *Route;
+typedef char *String;
 
 struct RoadStruct {
     int lastRepaired;
     unsigned length;
+    City end1, end2;
 };
 
-typedef struct CityStruct City;
 
 struct CityStruct {
-    char *name;
+    String name;
     Set roads;
 };
 
-typedef struct Route Route;
 
-struct Route {
+struct RouteStruct {
     City end1, end2;
-    Set roads;
+    List roads;
 };
 
 struct Map {
-
+    Dict cities;
+    Route routes[1000];
 };
 
 
 Map *newMap() {
-
+    Map *map = malloc(sizeof(Map));
+    if (map == NULL) {
+        return NULL;
+    }
 }
 
 void deleteMap(Map *map) {
