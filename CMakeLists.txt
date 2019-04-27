@@ -25,7 +25,7 @@ set(SOURCE_FILES
         src/vector.h
         src/map.c
         src/map.h
-        src/map_main.c src/dict.c src/dict.h)
+        src/map_main.c src/dict.c src/dict.h src/heap.c src/heap.h)
 
 # Wskazujemy plik wykonywalny.
 add_executable(map ${SOURCE_FILES})

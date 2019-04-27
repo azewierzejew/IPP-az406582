@@ -6,20 +6,20 @@
 
 struct VectorStruct;
 
-typedef struct VectorStruct *Vector;
+typedef struct VectorStruct Vector;
 
-Vector initVector();
+Vector *initVector();
 
-void deleteVector(Vector vector, void valueDestructor(void *));
+void deleteVector(Vector *vector, void valueDestructor(void *));
 
-bool pushToVector(Vector vector, void *value);
+bool pushToVector(Vector *vector, void *value);
 
-void popFromVector(Vector vector, void *value, void valueDestructor(void *));
+void popFromVector(Vector *vector, void *value, void valueDestructor(void *));
 
-size_t sizeOfVector(Vector vector);
+size_t sizeOfVector(Vector *vector);
 
-void **storageBlockOfVector(Vector vector);
+void **storageBlockOfVector(Vector *vector);
 
-bool replaceValueWithVector(Vector vector, void *value, Vector part);
+bool replaceValueWithVector(Vector *vector, void *value, Vector *part);
 
 #endif //DROGI_VECTOR_H

@@ -15,12 +15,12 @@ struct VectorStruct {
 // Funkcje pomocnicze.
 
 
-static inline bool resizeVector(Vector vector, size_t len);
+static inline bool resizeVector(Vector *vector, size_t len);
 
 // Implementacja funkcji pomocniczych.
 
 
-static inline bool resizeVector(Vector vector, const size_t len) {
+static inline bool resizeVector(Vector *vector, const size_t len) {
     void **newHolder = realloc(vector->holder, len * sizeof(void *));
     if (newHolder == NULL) {
         return NULL;
@@ -34,8 +34,8 @@ static inline bool resizeVector(Vector vector, const size_t len) {
 // Funkcje z interfejsu.
 
 
-Vector initVector() {
-    Vector vector = malloc(sizeof(struct VectorStruct));
+Vector *initVector() {
+    Vector *vector = malloc(sizeof(struct VectorStruct));
     if (vector == NULL) {
         return NULL;
     }
@@ -47,7 +47,7 @@ Vector initVector() {
     return vector;
 }
 
-void deleteVector(Vector vector, void valueDestructor(void *)) {
+void deleteVector(Vector *vector, void valueDestructor(void *)) {
     if (vector == NULL) {
         return;
     }
@@ -59,7 +59,7 @@ void deleteVector(Vector vector, void valueDestructor(void *)) {
     free(vector);
 }
 
-bool pushToVector(Vector vector, void *value) {
+bool pushToVector(Vector *vector, void *value) {
     if (vector == NULL) {
         return false;
     }
@@ -74,7 +74,7 @@ bool pushToVector(Vector vector, void *value) {
     return true;
 }
 
-void popFromVector(Vector vector, void *value, void valueDestructor(void *)) {
+void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) {
     if (vector == NULL) {
         return;
     }
@@ -88,7 +88,7 @@ void popFromVector(Vector vector, void *value, void valueDestructor(void *)) {
     }
 }
 
-size_t sizeOfVector(Vector vector) {
+size_t sizeOfVector(Vector *vector) {
     if (vector == NULL) {
         return 0;
     }
@@ -96,7 +96,7 @@ size_t sizeOfVector(Vector vector) {
     return vector->count;
 }
 
-void **storageBlockOfVector(Vector vector) {
+void **storageBlockOfVector(Vector *vector) {
     if (vector == NULL) {
         return NULL;
     }
