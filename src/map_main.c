@@ -10,7 +10,7 @@
 int main() {
     char const *str;
 
-    Map m = *newMap();
+    Map *m = newMap();
     assert(m);
 
     assert(addRoad(m, "Alinów", "Bór", 1, 2020));

@@ -11,11 +11,11 @@ Dict initDict();
 
 void deleteDict(Dict dict, void valueDestructor(void *));
 
-bool addToDict(Dict dict, char *word, void *value);
+bool addToDict(Dict dict, const char *word, void *value);
 
-bool existsInDict(Dict dict, char *word);
+bool existsInDict(Dict dict, const char *word);
 
-void *wordValue(Dict dict, char *word);
+void *valueInDict(Dict dict, const char *word);
 
 
 #endif //DROGI_DICT_H

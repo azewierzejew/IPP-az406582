@@ -7,6 +7,10 @@ struct VectorStruct {
     void **holder;
 };
 
+
+static inline bool resizeVector(Vector vector, const size_t len);
+
+
 static inline bool resizeVector(Vector vector, const size_t len) {
     void **newHolder = realloc(vector->holder, len * sizeof(void *));
     if (newHolder == NULL) {
@@ -17,6 +21,7 @@ static inline bool resizeVector(Vector vector, const size_t len) {
     vector->space = len;
     return true;
 }
+
 
 Vector initVector() {
     Vector vector = malloc(sizeof(struct VectorStruct));
@@ -51,7 +56,7 @@ bool isEmptyVector(Vector vector) {
     return vector->count == 0;
 }
 
-bool addToVector(Vector vector, void *value) {
+bool pushToVector(Vector vector, void *value) {
     if (vector == NULL) {
         return false;
     }
@@ -66,12 +71,12 @@ bool addToVector(Vector vector, void *value) {
     return true;
 }
 
-void removeFromVector(Vector vector, void *value, void valueDestructor(void *)) {
+void popFromVector(Vector vector, void *value, void valueDestructor(void *)) {
     if (vector == NULL) {
         return;
     }
 
-    for (int i = 0; i < vector->count; i++) {
+    for (size_t i = 0; i < vector->count; i++) {
         if (vector->holder[i] == value) {
             valueDestructor(vector->holder[i]);
             vector->holder[i] = vector->holder[--vector->count];
