@@ -1,5 +1,5 @@
 #include "map.h"
-#include "set.h"
+#include "vector.h"
 #include "list.h"
 #include "dict.h"
 
@@ -20,7 +20,7 @@ struct RoadStruct {
 
 struct CityStruct {
     String name;
-    Set roads;
+    Vector roads;
 };
 
 
