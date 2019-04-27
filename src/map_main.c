@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #undef NDEBUG
 
@@ -36,12 +37,16 @@ int main() {
     assert(newRoute(m, 10, "Alinów", "Emiliew"));
 
     str = getRouteDescription(m, 10);
+    printf("%s\n", str);
+    fflush(stdout);
     assert(strcmp(str, "10;Alinów;1;2020;Bór;2;2020;Cielińsk-Niekłańsk;4;2021;Emiliew") == 0);
     free((void *) str);
 
     assert(extendRoute(m, 10, "Homilcin"));
 
     str = getRouteDescription(m, 10);
+    printf("%s\n", str);
+    fflush(stdout);
     assert(strcmp(str, "10;Alinów;1;2020;Bór;2;2020;Cielińsk-Niekłańsk;4;2021;Emiliew"
                        ";3;2023;Fraźnik Nowy;4;2020;Grzegrzewo;5;2020;Homilcin") == 0);
     free((void *) str);

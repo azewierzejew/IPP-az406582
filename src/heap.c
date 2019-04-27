@@ -80,7 +80,7 @@ void *getMinimumFromHeap(Heap *heap) {
     }
 
 
-    size_t minimumNr;
+    size_t minimumNr = 0;
 
     for (size_t i = 1; i < elementCount; i++) {
         if (heap->comparator(elements[i], elements[minimumNr]) < 0) {
@@ -92,7 +92,8 @@ void *getMinimumFromHeap(Heap *heap) {
 
     // Zamiana miejsc bo popFromVector przegląda od końca.
     elements[minimumNr] = elements[elementCount - 1];
-    popFromVector(heap->elements, minimum, doNothing);
+    elements[elementCount - 1] = NULL;
+    popFromVector(heap->elements, NULL, doNothing);
 
     return minimum;
 }
