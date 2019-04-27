@@ -3,7 +3,8 @@
 
 #include <stdbool.h>
 
-typedef struct Set Set;
+struct SetS;
+typedef struct SetS Set;
 
 Set *initSet();
 

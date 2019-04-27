@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-struct Set {
+struct SetS {
     size_t space, count;
     void **holder;
 };

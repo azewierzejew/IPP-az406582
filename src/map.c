@@ -1,6 +1,27 @@
 #include "map.h"
+#include "set.h"
 
 #include <stdbool.h>
+
+typedef struct Road Road;
+
+struct Road {
+    int lastRepaired;
+    int length;
+};
+
+typedef struct City City;
+
+struct City {
+
+};
+
+typedef struct Route Route;
+
+struct Route {
+    City end1, end2;
+    Set roads1;
+};
 
 struct Map {
 
