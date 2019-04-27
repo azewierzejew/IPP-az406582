@@ -13,14 +13,17 @@ struct HeapStruct {
     Vector *elements;
 };
 
+
 // Funkcje pomocnicze.
 
-
+static void doNothing(__attribute__((unused)) void *arg);
 
 
 // Implementacja funkcji pomocniczych.
 
+static void doNothing(__attribute__((unused)) void *arg) {
 
+}
 
 
 // Funkcje z interfejsu.
@@ -50,7 +53,7 @@ void deleteHeap(Heap *heap, void valueDestructor(void *)) {
     free(heap);
 }
 
-bool isEmpty(Heap *heap) {
+bool isEmptyHeap(Heap *heap) {
     if (heap == NULL) {
         return true;
     }
@@ -76,13 +79,20 @@ void *getMinimumFromHeap(Heap *heap) {
         return NULL;
     }
 
-    void *minimum = elements[0];
+
+    size_t minimumNr;
 
     for (size_t i = 1; i < elementCount; i++) {
-        if (heap->comparator(elements[i], minimum) < 0) {
-            minimum = elements[i];
+        if (heap->comparator(elements[i], elements[minimumNr]) < 0) {
+            minimumNr = i;
         }
     }
+
+    void *minimum = elements[minimumNr];
+
+    // Zamiana miejsc bo popFromVector przegląda od końca.
+    elements[minimumNr] = elements[elementCount - 1];
+    popFromVector(heap->elements, minimum, doNothing);
 
     return minimum;
 }

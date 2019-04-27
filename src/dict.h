@@ -18,7 +18,5 @@ bool addToDict(Dict *dict, const char *word, void *value);
 
 void *valueInDict(Dict *dict, const char *word);
 
-Vector *vectorFromDict(Dict *dict);
-
 
 #endif //DROGI_DICT_H

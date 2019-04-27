@@ -11,7 +11,7 @@ Heap *initHeap(int comparator(void *, void *));
 
 void deleteHeap(Heap *heap, void valueDestructor(void *));
 
-bool isEmpty(Heap *heap);
+bool isEmptyHeap(Heap *heap);
 
 bool addToHeap(Heap *heap, void *value);
 

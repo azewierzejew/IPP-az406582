@@ -58,6 +58,13 @@ struct RouteSearchHeapEntryStruct {
 };
 
 
+// Stałe globalne.
+
+static const Distance WORST_DISTANCE = {UINT64_MAX, INT_MIN};
+
+static const Distance BASE_DISTANCE = {0, INT_MAX};
+
+
 // Funkcje pomocnicze.
 
 static City *initCity(const char *name, size_t id);
@@ -157,23 +164,6 @@ static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city) {
     entry->distance = distance;
     entry->city = city;
     return entry;
-}
-
-
-static Distance baseDistance() {
-    Distance distance;
-
-    distance.length = 0;
-    distance.lastRepaired = INT_MIN;
-    return distance;
-}
-
-static Distance worstDistance() {
-    Distance distance;
-
-    distance.length = UINT64_MAX;
-    distance.lastRepaired = INT_MIN;
-    return distance;
 }
 
 static Distance addRoadToDistance(Distance distance, Road *road) {
@@ -321,27 +311,108 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
         return NULL;
     }
 
-    Vector *citiesVector = vectorFromDict(map->cities);
-    if (citiesVector == NULL) {
-        return false;
-    }
-
     size_t cityCount = map->cityCount;
 
-    Distance *distance = malloc(sizeof(Distance) * cityCount);
-    if (distance == NULL) {
-        deleteVector(citiesVector, doNothing);
-        return false;
+    Distance *distances = malloc(sizeof(Distance) * cityCount);
+    if (distances == NULL) {
+        return NULL;
     }
 
     for (size_t i = 0; i < cityCount; i++) {
-        distance[i] = worstDistance();
+        distances[i] = WORST_DISTANCE;
+    }
+
+    bool *blockedCities = malloc(sizeof(bool) * cityCount);
+    if (blockedCities == NULL) {
+        free(distances);
+        return NULL;
+    }
+    {
+        size_t usedRoadsCount = sizeOfVector(usedRoads);
+        Road **usedRoadsArray = (Road **) storageBlockOfVector(usedRoads);
+        for (size_t i = 0; i < usedRoadsCount; i++) {
+            blockedCities[usedRoadsArray[i]->end1->id] = true;
+            blockedCities[usedRoadsArray[i]->end2->id] = true;
+        }
+
+        // Miasta końcowe mogą wystąpić na liście, więc trzeba je odznaczyć.
+        blockedCities[city1->id] = false;
+        blockedCities[city2->id] = false;
     }
 
     Heap *heap = initHeap(compareRouteSearchHeapEntries);
+    if (heap == NULL) {
+        free(distances);
+        free(blockedCities);
+        return NULL;
+    }
 
+    distances[city2->id] = BASE_DISTANCE;
+    {
+        // Szukana jest droga z city2 do city1, żeby odbudowywując ją od tyłu była w dobrej kolejności.
+        RouteSearchHeapEntry *baseEntry = initHeapEntry(distances[city2->id], city2);
+        if (baseEntry == NULL || !addToHeap(heap, baseEntry)) {
+            free(distances);
+            free(blockedCities);
+            deleteHeap(heap, free);
+            return NULL;
+        }
+        free(baseEntry);
+    }
 
-    RouteSearchHeapEntry *baseEntry = initHeapEntry(baseDistance(), city2);
+    while (!isEmptyHeap(heap)) {
+        RouteSearchHeapEntry *nextEntry = getMinimumFromHeap(heap);
+        Distance distance = nextEntry->distance;
+        City *city = nextEntry->city;
+        free(nextEntry);
+
+        if (blockedCities[city->id] || compareDistances(distance, distances[city->id]) > 0) {
+            continue;
+        }
+
+        distances[city->id] = distance;
+
+        if (city == city1) {
+            break;
+        }
+
+        size_t roadCount = sizeOfVector(city->roads);
+        Road **roads = (Road **) storageBlockOfVector(city->roads);
+        for (size_t i = 0; i < roadCount; i++) {
+            Road *road = roads[i];
+            City *newCity = otherRoadEnd(road, city);
+            Distance newDistance = addRoadToDistance(distance, road);
+            if (compareDistances(newDistance, distances[newCity->id]) < 0) {
+                distances[newCity->id] = newDistance;
+                RouteSearchHeapEntry *newEntry = initHeapEntry(newDistance, newCity);
+                if (newEntry == NULL || !addToHeap(heap, newEntry)) {
+                    free(distances);
+                    free(blockedCities);
+                    deleteHeap(heap, free);
+                    return NULL;
+                }
+            }
+        }
+    }
+
+    deleteHeap(heap, free);
+    heap = NULL;
+
+    // Żeby nie przejść przez zablokowane miasta, ustawiany jest dla nich najgorszy wynik.
+    for (size_t i = 0; i < cityCount; i++) {
+        if (blockedCities[i]) {
+            distances[i] = WORST_DISTANCE;
+        }
+    }
+
+    free(blockedCities);
+    blockedCities = NULL;
+
+    Vector *roads = initVector();
+    if (roads == NULL) {
+        free(distances);
+        return NULL;
+    }
 }
 
 static City *addCity(Map *map, const char *cityName) {

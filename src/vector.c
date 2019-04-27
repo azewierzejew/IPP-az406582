@@ -79,7 +79,8 @@ void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) {
         return;
     }
 
-    for (size_t i = 0; i < vector->count; i++) {
+    for (size_t i = vector->count; i > 0;) {
+        i--;
         if (vector->holder[i] == value) {
             valueDestructor(vector->holder[i]);
             vector->holder[i] = vector->holder[--vector->count];

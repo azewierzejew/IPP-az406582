@@ -121,28 +121,3 @@ void *valueInDict(Dict *dict, const char *word) {
 
     return NULL;
 }
-
-Vector *vectorFromDict(Dict *dict) {
-    if (dict == NULL) {
-        return NULL;
-    }
-
-    Vector *values = initVector();
-    if (values == NULL) {
-        return NULL;
-    }
-
-    bool success = true;
-    size_t entryCount = sizeOfVector(dict->entries);
-    Entry **entries = (Entry **) storageBlockOfVector(dict->entries);
-    for (size_t i = 0; i < entryCount && success; i++) {
-        success = pushToVector(values, entries[i]->value);
-    }
-
-    if (!success) {
-        deleteVector(values, doNothing);
-        return NULL;
-    }
-
-    return values;
-}
