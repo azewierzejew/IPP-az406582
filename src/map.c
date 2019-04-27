@@ -36,6 +36,8 @@ struct Map {
 };
 
 
+// Funkcje pomocnicze.
+
 static City initCity(const char *name);
 
 static Road initRoad(int builtYear, unsigned length, City end1, City end2);
@@ -54,6 +56,10 @@ static bool correctChar(char a);
 
 static bool checkCityName(const char *name);
 
+static City otherRoadEnd(Road road, City end);
+
+
+// Implementacja funkcji pomocniczych.
 
 static City initCity(const char *name) {
     City city = malloc(sizeof(struct CityStruct));
@@ -153,6 +159,22 @@ static bool checkCityName(const char *name) {
     return true;
 }
 
+static City otherRoadEnd(Road road, City end) {
+    if (road == NULL) {
+        return NULL;
+    }
+    if (road->end1 == end) {
+        return road->end2;
+    }
+    if (road->end2 == end) {
+        return road->end1;
+    }
+    return NULL;
+}
+
+
+// Funkcje z interfejsu.
+
 Map *newMap() {
     Map *map = malloc(sizeof(Map));
     if (map == NULL) {
@@ -233,7 +255,72 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
 
 
 bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repairYear) {
+    if (map == NULL || repairYear == 0) {
+        return false;
+    }
 
+    if (!checkCityName(cityName1) || !checkCityName(cityName2)) {
+        return false;
+    }
+
+    City city1 = valueInDict(map->cities, cityName1);
+    if (city1 == NULL) {
+        city1 = initCity(cityName1);
+        if (city1 == NULL) {
+            return false;
+        }
+
+        if (!addToDict(map->cities, cityName1, city1)) {
+            free(city1);
+            return false;
+        }
+    }
+
+    City city2 = valueInDict(map->cities, cityName2);
+    if (city2 == NULL) {
+        city2 = initCity(cityName1);
+        if (city2 == NULL) {
+            return false;
+        }
+
+        if (!addToDict(map->cities, cityName2, city2)) {
+            free(city2);
+            return false;
+        }
+    }
+
+    Road road = NULL;
+
+    size_t len = sizeOfVector(city1->roads);
+    // Dla wydajności zamieniane są miasta jeśli z drugiego wychodzi mniej odcinków.
+    {
+        size_t len2 = sizeOfVector(city2->roads);
+        if (len > len2) {
+            City tmp = city1;
+            city1 = city2;
+            city2 = tmp;
+            len = len2;
+        }
+
+    }
+
+    Road *roads = (Road *) arrayFromVector(city1->roads);
+    for (size_t i = 0; i < len && road == NULL; i++) {
+        if (city2 == otherRoadEnd(roads[i], city1)) {
+            road = roads[i];
+        }
+    }
+
+    if (road == NULL) {
+        return false;
+    }
+
+    if (road->lastRepaired > repairYear) {
+        return false;
+    }
+
+    road->lastRepaired = repairYear;
+    return true;
 }
 
 
