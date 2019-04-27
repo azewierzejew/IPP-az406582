@@ -15,7 +15,7 @@ struct VectorStruct {
 // Funkcje pomocnicze.
 
 
-static inline bool resizeVector(Vector vector, const size_t len);
+static inline bool resizeVector(Vector vector, size_t len);
 
 // Implementacja funkcji pomocniczych.
 
@@ -59,14 +59,6 @@ void deleteVector(Vector vector, void valueDestructor(void *)) {
     free(vector);
 }
 
-bool isEmptyVector(Vector vector) {
-    if (vector == NULL) {
-        return false;
-    }
-
-    return vector->count == 0;
-}
-
 bool pushToVector(Vector vector, void *value) {
     if (vector == NULL) {
         return false;
@@ -104,7 +96,7 @@ size_t sizeOfVector(Vector vector) {
     return vector->count;
 }
 
-void **arrayFromVector(Vector vector) {
+void **storageBlockOfVector(Vector vector) {
     if (vector == NULL) {
         return NULL;
     }

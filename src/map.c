@@ -1,11 +1,11 @@
 #include "map.h"
 #include "vector.h"
-#include "list.h"
 #include "dict.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 
 // Definicje typów.
@@ -27,27 +27,29 @@ struct RoadStruct {
 struct CityStruct {
     String name;
     Vector roads;
+    size_t id;
 };
 
 
 struct RouteStruct {
     City end1, end2;
-    List roads;
+    Vector roads;
 };
 
 struct Map {
     Dict cities;
-    Vector routes;
+    Route *routes;
+    size_t cityCount;
 };
 
 
 // Funkcje pomocnicze.
 
-static City initCity(const char *name);
+static City initCity(const char *name, size_t id);
 
 static Road initRoad(int builtYear, unsigned length, City end1, City end2);
 
-static Route initRoute(List roads, City end1, City end2);
+static Route initRoute(Vector roads, City end1, City end2);
 
 static void doNothing(void *arg);
 
@@ -63,10 +65,16 @@ static bool checkCityName(const char *name);
 
 static City otherRoadEnd(Road road, City end);
 
+static Road findRoad(City city1, City city2);
+
+static Vector findRoute(Map *map, City city1, City city2, Vector usedRoads);
+
+static City addCity(Map *map, const char *cityName);
+
 
 // Implementacja funkcji pomocniczych.
 
-static City initCity(const char *name) {
+static City initCity(const char *name, size_t id) {
     City city = malloc(sizeof(struct CityStruct));
     if (city == NULL) {
         return NULL;
@@ -78,6 +86,15 @@ static City initCity(const char *name) {
         return NULL;
     }
     strcpy(city->name, name);
+
+    city->roads = initVector();
+    if (city->roads == NULL) {
+        free(city->name);
+        free(city);
+        return NULL;
+    }
+
+    city->id = id;
     return city;
 }
 
@@ -94,7 +111,7 @@ static Road initRoad(int builtYear, unsigned length, City end1, City end2) {
     return road;
 }
 
-static Route initRoute(List roads, City end1, City end2) {
+static Route initRoute(Vector roads, City end1, City end2) {
     Route route = malloc(sizeof(struct RouteStruct));
     if (route == NULL) {
         return NULL;
@@ -141,7 +158,7 @@ static void deleteRoute(void *routeVoid) {
         return;
     }
 
-    deleteList(route->roads, doNothing);
+    deleteVector(route->roads, doNothing);
     free(route);
 }
 
@@ -181,6 +198,79 @@ static City otherRoadEnd(Road road, City end) {
     return NULL;
 }
 
+static Road findRoad(City city1, City city2) {
+    if (city1 == NULL || city2 == NULL) {
+        return NULL;
+    }
+
+    Road road = NULL;
+    size_t len = sizeOfVector(city1->roads);
+    // Dla wydajności zamieniane są miasta jeśli z drugiego wychodzi mniej odcinków.
+    {
+        size_t len2 = sizeOfVector(city2->roads);
+        if (len > len2) {
+            City tmp = city1;
+            city1 = city2;
+            city2 = tmp;
+            len = len2;
+        }
+
+    }
+
+    Road *roads = (Road *) storageBlockOfVector(city1->roads);
+    for (size_t i = 0; i < len && road == NULL; i++) {
+        if (city2 == otherRoadEnd(roads[i], city1)) {
+            road = roads[i];
+        }
+    }
+
+    return road;
+}
+
+static Vector findRoute(Map *map, City city1, City city2, Vector usedRoads) {
+    if (map == NULL || city1 == NULL || city2 == NULL) {
+        return NULL;
+    }
+
+    Vector citiesVector = vectorFromDict(map->cities);
+    if (citiesVector == NULL) {
+        return false;
+    }
+
+    size_t cityCount = map->cityCount;
+    City *cities = storageBlockOfVector(citiesVector);
+
+    uint64_t *distance = malloc(sizeof(uint64_t) * cityCount);
+    if (distance == NULL) {
+        deleteVector(citiesVector, doNothing);
+        return false;
+    }
+
+    memset(distance, 0xff, sizeof(uint64_t) * cityCount);
+
+    // TODO
+}
+
+static City addCity(Map *map, const char *cityName) {
+    if (map == NULL) {
+        return NULL;
+    }
+
+
+    City city = initCity(cityName, map->cityCount);
+    if (city == NULL) {
+        return NULL;
+    }
+
+    if (!addToDict(map->cities, cityName, city)) {
+        deleteCity(city);
+        return NULL;
+    }
+
+    map->cityCount++;
+    return city;
+}
+
 
 // Funkcje z interfejsu.
 
@@ -191,7 +281,8 @@ Map *newMap() {
     }
 
     map->cities = initDict();
-    map->routes = initVector();
+    map->routes = malloc(sizeof(Route) * 1000);
+    map->cityCount = 0;
 
     if (map->cities == NULL || map->routes == NULL) {
         deleteMap(map);
@@ -207,7 +298,7 @@ void deleteMap(Map *map) {
     }
 
     deleteDict(map->cities, deleteCity);
-    deleteVector(map->routes, deleteRoute);
+    free(map->routes);
     free(map);
 }
 
@@ -223,26 +314,22 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
 
     City city1 = valueInDict(map->cities, cityName1);
     if (city1 == NULL) {
-        city1 = initCity(cityName1);
+        city1 = addCity(map, cityName1);
         if (city1 == NULL) {
-            return false;
-        }
-
-        if (!addToDict(map->cities, cityName1, city1)) {
             return false;
         }
     }
 
     City city2 = valueInDict(map->cities, cityName2);
     if (city2 == NULL) {
-        city2 = initCity(cityName2);
+        city2 = addCity(map, cityName2);
         if (city2 == NULL) {
             return false;
         }
+    }
 
-        if (!addToDict(map->cities, cityName2, city2)) {
-            return false;
-        }
+    if (findRoad(city1, city2) != NULL) {
+        return false;
     }
 
     Road road = initRoad(builtYear, length, city1, city2);
@@ -274,52 +361,15 @@ bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repa
 
     City city1 = valueInDict(map->cities, cityName1);
     if (city1 == NULL) {
-        city1 = initCity(cityName1);
-        if (city1 == NULL) {
-            return false;
-        }
-
-        if (!addToDict(map->cities, cityName1, city1)) {
-            free(city1);
-            return false;
-        }
+        return false;
     }
 
     City city2 = valueInDict(map->cities, cityName2);
     if (city2 == NULL) {
-        city2 = initCity(cityName1);
-        if (city2 == NULL) {
-            return false;
-        }
-
-        if (!addToDict(map->cities, cityName2, city2)) {
-            free(city2);
-            return false;
-        }
+        return false;
     }
 
-    Road road = NULL;
-
-    size_t len = sizeOfVector(city1->roads);
-    // Dla wydajności zamieniane są miasta jeśli z drugiego wychodzi mniej odcinków.
-    {
-        size_t len2 = sizeOfVector(city2->roads);
-        if (len > len2) {
-            City tmp = city1;
-            city1 = city2;
-            city2 = tmp;
-            len = len2;
-        }
-
-    }
-
-    Road *roads = (Road *) arrayFromVector(city1->roads);
-    for (size_t i = 0; i < len && road == NULL; i++) {
-        if (city2 == otherRoadEnd(roads[i], city1)) {
-            road = roads[i];
-        }
-    }
-
+    Road road = findRoad(city1, city2);
     if (road == NULL) {
         return false;
     }
@@ -334,7 +384,34 @@ bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repa
 
 
 bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cityName2) {
+    if (map == NULL || routeId == 0 || routeId >= 1000 || map->routes[routeId] != NULL) {
+        return false;
+    }
 
+    if (!checkCityName(cityName1) || !checkCityName(cityName2)) {
+        return false;
+    }
+
+    if (strcmp(cityName1, cityName2) == 0) {
+        return false;
+    }
+
+    City city1 = valueInDict(map->cities, cityName1);
+    if (city1 == NULL) {
+        return false;
+    }
+
+    City city2 = valueInDict(map->cities, cityName2);
+    if (city2 == NULL) {
+        return false;
+    }
+
+    Vector roads = findRoute(map, city1, city2, NULL);
+    if (roads == NULL) {
+        return false;
+    }
+
+    // TODO rób nową drogę
 }
 
 bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
