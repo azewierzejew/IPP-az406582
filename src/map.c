@@ -7,10 +7,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+// Definicje typów.
+
 typedef struct RoadStruct *Road;
 typedef struct CityStruct *City;
 typedef struct RouteStruct *Route;
 typedef char *String;
+
+// Deklaracje struktur.
 
 struct RoadStruct {
     int lastRepaired;
@@ -68,6 +73,10 @@ static City initCity(const char *name) {
     }
 
     city->name = malloc(sizeof(char) * (strlen(name) + 1));
+    if (city->name == NULL) {
+        free(city);
+        return NULL;
+    }
     strcpy(city->name, name);
     return city;
 }
@@ -246,7 +255,7 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
     }
 
     if (!pushToVector(city2->roads, road)) {
-        popFromVector(city1->roads, road);
+        popFromVector(city1->roads, road, free);
         return false;
     }
 

@@ -1,6 +1,10 @@
 #include "vector.h"
 
 #include <stdlib.h>
+#include <stdbool.h>
+
+
+// Deklaracje struktur.
 
 struct VectorStruct {
     size_t space, count;
@@ -8,7 +12,12 @@ struct VectorStruct {
 };
 
 
+// Funkcje pomocnicze.
+
+
 static inline bool resizeVector(Vector vector, const size_t len);
+
+// Implementacja funkcji pomocniczych.
 
 
 static inline bool resizeVector(Vector vector, const size_t len) {
@@ -21,6 +30,8 @@ static inline bool resizeVector(Vector vector, const size_t len) {
     vector->space = len;
     return true;
 }
+
+// Funkcje z interfejsu.
 
 
 Vector initVector() {

@@ -13,8 +13,6 @@ void deleteDict(Dict dict, void valueDestructor(void *));
 
 bool addToDict(Dict dict, const char *word, void *value);
 
-bool existsInDict(Dict dict, const char *word);
-
 void *valueInDict(Dict dict, const char *word);
 
 

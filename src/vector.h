@@ -1,8 +1,8 @@
 #ifndef DROGI_VECTOR_H
 #define DROGI_VECTOR_H
 
-#include <stdbool.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 struct VectorStruct;
 
