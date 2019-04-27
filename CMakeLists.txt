@@ -21,8 +21,8 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 
 # Wskazujemy pliki źródłowe.
 set(SOURCE_FILES
-        src/set.c
-        src/set.h
+        src/vector.c
+        src/vector.h
         src/map.c
         src/map.h
         src/map_main.c src/list.c src/list.h src/dict.c src/dict.h)
