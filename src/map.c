@@ -3,24 +3,25 @@
 
 #include <stdbool.h>
 
-typedef struct Road Road;
+typedef struct RoadStruct Road;
 
-struct Road {
+struct RoadStruct {
     int lastRepaired;
-    int length;
+    unsigned length;
 };
 
-typedef struct City City;
+typedef struct CityStruct City;
 
-struct City {
-
+struct CityStruct {
+    char *name;
+    Set roads;
 };
 
 typedef struct Route Route;
 
 struct Route {
     City end1, end2;
-    Set roads1;
+    Set roads;
 };
 
 struct Map {

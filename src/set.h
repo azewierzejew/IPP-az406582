@@ -3,17 +3,26 @@
 
 #include <stdbool.h>
 
-struct SetS;
-typedef struct SetS Set;
+struct SetStruct;
 
-Set *initSet();
+typedef struct SetStruct *Set;
 
-bool addToSet(Set set, const void *value);
+struct SetIteratorStruct;
+
+typedef struct SetIteratorStruct *SetIterator;
+
+Set initSet();
+
+void deleteSet(Set set, void valueDestructor(void *));
 
 bool isEmptySet(Set set);
 
-void removeFromSet(Set set, const void *value);
+bool addToSet(Set set, void *value);
 
-void deleteSet(Set set);
+void removeFromSet(Set set, void *value, void valueDestructor(void *));
+
+SetIterator iterateSet(Set set);
+
+void *getSetIteratorNext(SetIterator iterator);
 
 #endif //DROGI_SET_H
