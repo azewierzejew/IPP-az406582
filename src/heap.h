@@ -5,14 +5,16 @@
 
 struct HeapStruct;
 
-typedef struct HeapStruct *Heap;
+typedef struct HeapStruct Heap;
 
-Heap initHeap(int comparator(void *, void *));
+Heap *initHeap(int comparator(void *, void *));
 
-bool isEmpty(Heap heap);
+void deleteHeap(Heap *heap, void valueDestructor(void *));
 
-bool addToHeap(Heap heap, void *value);
+bool isEmpty(Heap *heap);
 
-void *getMinimumFromHeap(Heap heap);
+bool addToHeap(Heap *heap, void *value);
+
+void *getMinimumFromHeap(Heap *heap);
 
 #endif //DROGI_HEAP_H

@@ -8,17 +8,17 @@
 
 struct DictStruct;
 
-typedef struct DictStruct *Dict;
+typedef struct DictStruct Dict;
 
-Dict initDict();
+Dict *initDict();
 
-void deleteDict(Dict dict, void valueDestructor(void *));
+void deleteDict(Dict *dict, void valueDestructor(void *));
 
-bool addToDict(Dict dict, const char *word, void *value);
+bool addToDict(Dict *dict, const char *word, void *value);
 
-void *valueInDict(Dict dict, const char *word);
+void *valueInDict(Dict *dict, const char *word);
 
-Vector vectorFromDict(Dict dict);
+Vector *vectorFromDict(Dict *dict);
 
 
 #endif //DROGI_DICT_H

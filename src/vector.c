@@ -35,7 +35,7 @@ static inline bool resizeVector(Vector *vector, const size_t len) {
 
 
 Vector *initVector() {
-    Vector *vector = malloc(sizeof(struct VectorStruct));
+    Vector *vector = malloc(sizeof(Vector));
     if (vector == NULL) {
         return NULL;
     }
@@ -95,6 +95,15 @@ size_t sizeOfVector(Vector *vector) {
 
     return vector->count;
 }
+
+bool isEmptyVector(Vector *vector) {
+    if (vector == NULL) {
+        return true;
+    }
+
+    return vector->count == 0;
+}
+
 
 void **storageBlockOfVector(Vector *vector) {
     if (vector == NULL) {

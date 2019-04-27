@@ -8,7 +8,7 @@
 
 // Definicje typów.
 
-typedef struct EntryStruct *Entry;
+typedef struct EntryStruct Entry;
 
 
 // Deklaracje struktur.
@@ -19,21 +19,21 @@ struct EntryStruct {
 };
 
 struct DictStruct {
-    Vector entries;
+    Vector *entries;
 };
 
 
 // Funkcje pomocnicze.
 
-static Entry initEntry(const char *word, void *value);
+static Entry *initEntry(const char *word, void *value);
 
 static void doNothing(__attribute__((unused)) void *arg);
 
 
 // Implementacja funkcji pomocniczych.
 
-static Entry initEntry(const char *word, void *value) {
-    Entry entry = malloc(sizeof(struct EntryStruct));
+static Entry *initEntry(const char *word, void *value) {
+    Entry *entry = malloc(sizeof(Entry));
     if (entry == NULL) {
         return NULL;
     }
@@ -56,8 +56,8 @@ static void doNothing(__attribute__((unused)) void *arg) {
 
 // Funkcje z interfejsu.
 
-Dict initDict() {
-    Dict dict = malloc(sizeof(struct DictStruct));
+Dict *initDict() {
+    Dict *dict = malloc(sizeof(Dict));
     if (dict == NULL) {
         return NULL;
     }
@@ -71,13 +71,13 @@ Dict initDict() {
     return dict;
 }
 
-void deleteDict(Dict dict, void valueDestructor(void *)) {
+void deleteDict(Dict *dict, void valueDestructor(void *)) {
     if (dict == NULL) {
         return;
     }
 
     size_t entryCount = sizeOfVector(dict->entries);
-    Entry *entries = (Entry *) storageBlockOfVector(dict->entries);
+    Entry **entries = (Entry **) storageBlockOfVector(dict->entries);
     for (size_t i = 0; i < entryCount; i++) {
         free(entries[i]->word);
         valueDestructor(entries[i]->value);
@@ -87,12 +87,12 @@ void deleteDict(Dict dict, void valueDestructor(void *)) {
     free(dict);
 }
 
-bool addToDict(Dict dict, const char *word, void *value) {
+bool addToDict(Dict *dict, const char *word, void *value) {
     if (dict == NULL) {
         return false;
     }
 
-    Entry entry = initEntry(word, value);
+    Entry *entry = initEntry(word, value);
     if (entry == NULL) {
         return false;
     }
@@ -106,13 +106,13 @@ bool addToDict(Dict dict, const char *word, void *value) {
     return true;
 }
 
-void *valueInDict(Dict dict, const char *word) {
+void *valueInDict(Dict *dict, const char *word) {
     if (dict == NULL) {
         return NULL;
     }
 
     size_t entryCount = sizeOfVector(dict->entries);
-    Entry *entries = (Entry *) storageBlockOfVector(dict->entries);
+    Entry **entries = (Entry **) storageBlockOfVector(dict->entries);
     for (size_t i = 0; i < entryCount; i++) {
         if (strcmp(word, entries[i]->word) == 0) {
             return entries[i]->value;
@@ -122,19 +122,19 @@ void *valueInDict(Dict dict, const char *word) {
     return NULL;
 }
 
-Vector vectorFromDict(Dict dict) {
+Vector *vectorFromDict(Dict *dict) {
     if (dict == NULL) {
         return NULL;
     }
 
-    Vector values = initVector();
+    Vector *values = initVector();
     if (values == NULL) {
         return NULL;
     }
 
     bool success = true;
     size_t entryCount = sizeOfVector(dict->entries);
-    Entry *entries = (Entry *) storageBlockOfVector(dict->entries);
+    Entry **entries = (Entry **) storageBlockOfVector(dict->entries);
     for (size_t i = 0; i < entryCount && success; i++) {
         success = pushToVector(values, entries[i]->value);
     }

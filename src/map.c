@@ -12,37 +12,38 @@
 
 // Definicje typów.
 
-typedef struct RoadStruct *Road;
-typedef struct CityStruct *City;
-typedef struct RouteStruct *Route;
+typedef struct RoadStruct Road;
+typedef struct CityStruct City;
+typedef struct RouteStruct Route;
 typedef struct DistanceStruct Distance;
-typedef struct RouteSearchHeapEntryStruct *RouteSearchHeapEntry;
-typedef char *String;
+typedef struct RouteSearchHeapEntryStruct RouteSearchHeapEntry;
 
 // Deklaracje struktur.
 
 struct RoadStruct {
     int lastRepaired;
     unsigned length;
-    City end1, end2;
+    City *end1;
+    City *end2;
 };
 
 
 struct CityStruct {
-    String name;
-    Vector roads;
+    char *name;
+    Vector *roads;
     size_t id;
 };
 
 
 struct RouteStruct {
-    City end1, end2;
-    Vector roads;
+    City *end1;
+    City *end2;
+    Vector *roads;
 };
 
 struct Map {
-    Dict cities;
-    Route *routes;
+    Dict *cities;
+    Route **routes;
     size_t cityCount;
 };
 
@@ -53,23 +54,23 @@ struct DistanceStruct {
 
 struct RouteSearchHeapEntryStruct {
     Distance distance;
-    City city;
+    City *city;
 };
 
 
 // Funkcje pomocnicze.
 
-static City initCity(const char *name, size_t id);
+static City *initCity(const char *name, size_t id);
 
-static Road initRoad(int builtYear, unsigned length, City end1, City end2);
+static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2);
 
-static Route initRoute(Vector roads, City end1, City end2);
+static Route *initRoute(Vector *roads, City *end1, City *end2);
 
-static RouteSearchHeapEntry initHeapEntry(Distance distance, City city);
+static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city);
 
 static Distance initDistance();
 
-static Distance addRoadToDistance(Distance distance, Road road);
+static Distance addRoadToDistance(Distance distance, Road *road);
 
 static void doNothing(void *arg);
 
@@ -83,23 +84,23 @@ static bool correctChar(char a);
 
 static bool checkCityName(const char *name);
 
-static City otherRoadEnd(Road road, City end);
+static City *otherRoadEnd(Road *road, City *end);
 
-static Road findRoad(City city1, City city2);
+static Road *findRoad(City *city1, City *city2);
 
 static int compareDistances(Distance distance1, Distance distance2);
 
 static int compareRouteSearchHeapEntries(void *heapEntry1Void, void *heapEntry2Void);
 
-static Vector findRoute(Map *map, City city1, City city2, Vector usedRoads);
+static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads);
 
-static City addCity(Map *map, const char *cityName);
+static City *addCity(Map *map, const char *cityName);
 
 
 // Implementacja funkcji pomocniczych.
 
-static City initCity(const char *name, size_t id) {
-    City city = malloc(sizeof(struct CityStruct));
+static City *initCity(const char *name, size_t id) {
+    City *city = malloc(sizeof(struct CityStruct));
     if (city == NULL) {
         return NULL;
     }
@@ -122,8 +123,8 @@ static City initCity(const char *name, size_t id) {
     return city;
 }
 
-static Road initRoad(int builtYear, unsigned length, City end1, City end2) {
-    Road road = malloc(sizeof(struct RoadStruct));
+static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2) {
+    Road *road = malloc(sizeof(struct RoadStruct));
     if (road == NULL) {
         return NULL;
     }
@@ -135,8 +136,8 @@ static Road initRoad(int builtYear, unsigned length, City end1, City end2) {
     return road;
 }
 
-static Route initRoute(Vector roads, City end1, City end2) {
-    Route route = malloc(sizeof(struct RouteStruct));
+static Route *initRoute(Vector *roads, City *end1, City *end2) {
+    Route *route = malloc(sizeof(struct RouteStruct));
     if (route == NULL) {
         return NULL;
     }
@@ -147,8 +148,8 @@ static Route initRoute(Vector roads, City end1, City end2) {
     return route;
 }
 
-static RouteSearchHeapEntry initHeapEntry(Distance distance, City city) {
-    RouteSearchHeapEntry entry = malloc(sizeof(struct RouteSearchHeapEntryStruct));
+static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city) {
+    RouteSearchHeapEntry *entry = malloc(sizeof(struct RouteSearchHeapEntryStruct));
     if (entry == NULL) {
         return NULL;
     }
@@ -169,24 +170,17 @@ static Distance baseDistance() {
 
 static Distance worstDistance() {
     Distance distance;
-    if (distance == NULL) {
-        return NULL;
-    }
 
-    distance->length = UINT64_MAX;
-    distance->lastRepaired = INT_MIN;
+    distance.length = UINT64_MAX;
+    distance.lastRepaired = INT_MIN;
+    return distance;
 }
 
-static Distance addRoadToDistance(Distance distance, Road road) {
-    if (distance == NULL || road == NULL) {
-        return NULL;
-    }
-
-    Distance newDistance = malloc(sizeof(struct DistanceStruct));
-    *newDistance = *distance;
-    newDistance->length += road->length;
-    if (road->lastRepaired > distance->lastRepaired) {
-        newDistance->lastRepaired = road->lastRepaired;
+static Distance addRoadToDistance(Distance distance, Road *road) {
+    Distance newDistance = distance;
+    newDistance.length += road->length;
+    if (road->lastRepaired > distance.lastRepaired) {
+        newDistance.lastRepaired = road->lastRepaired;
     }
 
     return newDistance;
@@ -197,7 +191,7 @@ static void doNothing(__attribute__((unused)) void *arg) {
 }
 
 static void deleteRoad(void *roadVoid) {
-    Road road = roadVoid;
+    Road *road = roadVoid;
     if (road == NULL) {
         return;
     }
@@ -211,7 +205,7 @@ static void deleteRoad(void *roadVoid) {
 }
 
 static void deleteCity(void *cityVoid) {
-    City city = cityVoid;
+    City *city = cityVoid;
     if (city == NULL) {
         return;
     }
@@ -222,7 +216,7 @@ static void deleteCity(void *cityVoid) {
 }
 
 static void deleteRoute(void *routeVoid) {
-    Route route = routeVoid;
+    Route *route = routeVoid;
     if (route == NULL) {
         return;
     }
@@ -254,7 +248,7 @@ static bool checkCityName(const char *name) {
     return true;
 }
 
-static City otherRoadEnd(Road road, City end) {
+static City *otherRoadEnd(Road *road, City *end) {
     if (road == NULL) {
         return NULL;
     }
@@ -267,18 +261,18 @@ static City otherRoadEnd(Road road, City end) {
     return NULL;
 }
 
-static Road findRoad(City city1, City city2) {
+static Road *findRoad(City *city1, City *city2) {
     if (city1 == NULL || city2 == NULL) {
         return NULL;
     }
 
-    Road road = NULL;
+    Road *road = NULL;
     size_t len = sizeOfVector(city1->roads);
     // Dla wydajności zamieniane są miasta jeśli z drugiego wychodzi mniej odcinków.
     {
         size_t len2 = sizeOfVector(city2->roads);
         if (len > len2) {
-            City tmp = city1;
+            City *tmp = city1;
             city1 = city2;
             city2 = tmp;
             len = len2;
@@ -286,7 +280,7 @@ static Road findRoad(City city1, City city2) {
 
     }
 
-    Road *roads = (Road *) storageBlockOfVector(city1->roads);
+    Road **roads = (Road **) storageBlockOfVector(city1->roads);
     for (size_t i = 0; i < len && road == NULL; i++) {
         if (city2 == otherRoadEnd(roads[i], city1)) {
             road = roads[i];
@@ -297,28 +291,24 @@ static Road findRoad(City city1, City city2) {
 }
 
 static int compareDistances(Distance distance1, Distance distance2) {
-    if (distance1 == NULL || distance2 == NULL) {
-        return 0;
-    }
-
-    if (distance1->length < distance2->length) {
+    if (distance1.length < distance2.length) {
         return -1;
     }
-    if (distance1->length > distance2->length) {
+    if (distance1.length > distance2.length) {
         return 1;
     }
-    if (distance1->lastRepaired > distance2->lastRepaired) {
+    if (distance1.lastRepaired > distance2.lastRepaired) {
         return -1;
     }
-    if (distance1->lastRepaired < distance2->lastRepaired) {
+    if (distance1.lastRepaired < distance2.lastRepaired) {
         return 1;
     }
     return 0;
 }
 
 static int compareRouteSearchHeapEntries(void *heapEntry1Void, void *heapEntry2Void) {
-    RouteSearchHeapEntry entry1 = heapEntry1Void;
-    RouteSearchHeapEntry entry2 = heapEntry2Void;
+    RouteSearchHeapEntry *entry1 = heapEntry1Void;
+    RouteSearchHeapEntry *entry2 = heapEntry2Void;
     if (entry1 == NULL || entry2 == NULL) {
         return 0;
     }
@@ -326,19 +316,19 @@ static int compareRouteSearchHeapEntries(void *heapEntry1Void, void *heapEntry2V
     return compareDistances(entry1->distance, entry2->distance);
 }
 
-static Vector findRoute(Map *map, City city1, City city2, Vector usedRoads) {
+static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) {
     if (map == NULL || city1 == NULL || city2 == NULL) {
         return NULL;
     }
 
-    Vector citiesVector = vectorFromDict(map->cities);
+    Vector *citiesVector = vectorFromDict(map->cities);
     if (citiesVector == NULL) {
         return false;
     }
 
     size_t cityCount = map->cityCount;
 
-    uint64_t *distance = malloc(sizeof(Distance) * cityCount);
+    Distance *distance = malloc(sizeof(Distance) * cityCount);
     if (distance == NULL) {
         deleteVector(citiesVector, doNothing);
         return false;
@@ -348,20 +338,19 @@ static Vector findRoute(Map *map, City city1, City city2, Vector usedRoads) {
         distance[i] = worstDistance();
     }
 
-    Heap heap = initHeap(compareRouteSearchHeapEntries);
+    Heap *heap = initHeap(compareRouteSearchHeapEntries);
 
 
-    RouteSearchHeapEntry baseEntry = initHeapEntry(baseDistance(), city2);
-    addToHeap(heap,)
+    RouteSearchHeapEntry *baseEntry = initHeapEntry(baseDistance(), city2);
 }
 
-static City addCity(Map *map, const char *cityName) {
+static City *addCity(Map *map, const char *cityName) {
     if (map == NULL) {
         return NULL;
     }
 
 
-    City city = initCity(cityName, map->cityCount);
+    City *city = initCity(cityName, map->cityCount);
     if (city == NULL) {
         return NULL;
     }
@@ -416,7 +405,7 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
         return false;
     }
 
-    City city1 = valueInDict(map->cities, cityName1);
+    City *city1 = valueInDict(map->cities, cityName1);
     if (city1 == NULL) {
         city1 = addCity(map, cityName1);
         if (city1 == NULL) {
@@ -424,7 +413,7 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
         }
     }
 
-    City city2 = valueInDict(map->cities, cityName2);
+    City *city2 = valueInDict(map->cities, cityName2);
     if (city2 == NULL) {
         city2 = addCity(map, cityName2);
         if (city2 == NULL) {
@@ -436,7 +425,7 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
         return false;
     }
 
-    Road road = initRoad(builtYear, length, city1, city2);
+    Road *road = initRoad(builtYear, length, city1, city2);
     if (road == NULL) {
         return false;
     }
@@ -463,17 +452,17 @@ bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repa
         return false;
     }
 
-    City city1 = valueInDict(map->cities, cityName1);
+    City *city1 = valueInDict(map->cities, cityName1);
     if (city1 == NULL) {
         return false;
     }
 
-    City city2 = valueInDict(map->cities, cityName2);
+    City *city2 = valueInDict(map->cities, cityName2);
     if (city2 == NULL) {
         return false;
     }
 
-    Road road = findRoad(city1, city2);
+    Road *road = findRoad(city1, city2);
     if (road == NULL) {
         return false;
     }
@@ -500,17 +489,17 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
         return false;
     }
 
-    City city1 = valueInDict(map->cities, cityName1);
+    City *city1 = valueInDict(map->cities, cityName1);
     if (city1 == NULL) {
         return false;
     }
 
-    City city2 = valueInDict(map->cities, cityName2);
+    City *city2 = valueInDict(map->cities, cityName2);
     if (city2 == NULL) {
         return false;
     }
 
-    Vector roads = findRoute(map, city1, city2, NULL);
+    Vector *roads = findRoute(map, city1, city2, NULL);
     if (roads == NULL) {
         return false;
     }
