@@ -2,14 +2,11 @@
 #define DROGI_VECTOR_H
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 struct VectorStruct;
 
 typedef struct VectorStruct *Vector;
-
-struct VectorIteratorStruct;
-
-typedef struct VectorIteratorStruct *VectorIterator;
 
 Vector initVector();
 
@@ -21,8 +18,8 @@ bool addToVector(Vector vector, void *value);
 
 void removeFromVector(Vector vector, void *value, void valueDestructor(void *));
 
-VectorIterator iterateVector(Vector vector);
+size_t sizeOfVector(Vector vector);
 
-void *getVectorIteratorNext(VectorIterator iterator);
+void **arrayFromVector(Vector vector);
 
 #endif //DROGI_VECTOR_H

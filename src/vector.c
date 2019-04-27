@@ -7,11 +7,6 @@ struct VectorStruct {
     void **holder;
 };
 
-struct VectorIteratorStruct {
-    Vector vector;
-    size_t number;
-};
-
 static inline bool resizeVector(Vector vector, const size_t len) {
     void **newHolder = realloc(vector->holder, len * sizeof(void *));
     if (newHolder == NULL) {
@@ -85,29 +80,18 @@ void removeFromVector(Vector vector, void *value, void valueDestructor(void *)) 
     }
 }
 
-VectorIterator iterateVector(Vector vector) {
+size_t sizeOfVector(Vector vector) {
+    if (vector == NULL) {
+        return 0;
+    }
+
+    return vector->count;
+}
+
+void **arrayFromVector(Vector vector) {
     if (vector == NULL) {
         return NULL;
     }
 
-    VectorIterator iterator = malloc(sizeof(struct VectorIteratorStruct));
-    if (iterator == NULL) {
-        return NULL;
-    }
-
-    iterator->vector = vector;
-    iterator->number = 0;
-    return iterator;
-}
-
-void *getVectorIteratorNext(VectorIterator iterator) {
-    if (iterator == NULL) {
-        return NULL;
-    }
-
-    if (iterator->number >= iterator->vector->count) {
-        return NULL;
-    }
-
-    return iterator->vector->holder[iterator->number++];
+    return vector->holder;
 }
