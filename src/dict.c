@@ -27,8 +27,6 @@ struct DictStruct {
 
 static Entry *initEntry(const char *word, void *value);
 
-static void doNothing(__attribute__((unused)) void *arg);
-
 
 // Implementacja funkcji pomocniczych.
 
@@ -47,10 +45,6 @@ static Entry *initEntry(const char *word, void *value) {
 
     entry->value = value;
     return entry;
-}
-
-static void doNothing(__attribute__((unused)) void *arg) {
-
 }
 
 

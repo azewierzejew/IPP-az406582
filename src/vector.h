@@ -24,4 +24,8 @@ void **storageBlockOfVector(Vector *vector);
 
 bool replaceValueWithVector(Vector *vector, void *value, Vector *part);
 
+bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *part);
+
+bool existsInVector(Vector *vector, void *value);
+
 #endif //DROGI_VECTOR_H

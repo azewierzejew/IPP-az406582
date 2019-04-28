@@ -382,6 +382,9 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
         for (size_t i = 0; i < roadCount; i++) {
             Road *road = roads[i];
             City *newCity = otherRoadEnd(road, city);
+            if (newCity == NULL) {
+                continue;
+            }
             Distance newDistance = addRoadToDistance(distance, road);
 
             if (compareDistances(newDistance, distances[newCity->id]) < 0) {
@@ -427,6 +430,9 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
         for (size_t i = 0; i < roadCount; i++) {
             Road *road = roads[i];
             City *newCity = otherRoadEnd(road, position);
+            if (newCity == NULL) {
+                continue;
+            }
             Distance newDistance = addRoadToDistance(distances[newCity->id], road);
 
             // Sprawdzenie czy da się uzyskać dobry dystans przychodząc z [newCity].
@@ -656,7 +662,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
         return false;
     }
 
-    if (!checkName(cityName) || map->routes[routeId] != NULL) {
+    if (!checkName(cityName) || map->routes[routeId] == NULL) {
         return false;
     }
 
@@ -672,7 +678,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
     }
 
     Vector *roads1 = findRoute(map, city, route->end1, route->roads);
-    Vector *roads2 = findRoute(map, city, route->end1, route->roads);
+    Vector *roads2 = findRoute(map, route->end2, city, route->roads);
 
     bool connectToEnd1;
     if (roads1 == NULL) {
@@ -716,6 +722,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
 
         deleteVector(route->roads, doNothing);
         route->roads = roads1;
+        route->end1 = city;
     } else {
         deleteVector(roads1, doNothing);
 
@@ -729,18 +736,81 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
             popFromVector(route->roads, NULL, doNothing);
             return false;
         }
+        route->end2 = city;
     }
 
     return true;
 }
 
 bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
-    // TODO napisz kod removeRoad
+    if (map == NULL) {
+        return false;
+    }
+
+    if (!checkName(cityName1) || !checkName(cityName2) || strcmp(cityName1, cityName2) == 0) {
+        return false;
+    }
+
+    City *city1 = valueInDict(map->cities, cityName1);
+    if (city1 == NULL) {
+        return false;
+    }
+
+    City *city2 = valueInDict(map->cities, cityName2);
+    if (city2 == NULL) {
+        return false;
+    }
+
+    Road *road = findRoad(city1, city2);
+    if (road == NULL) {
+        return false;
+    }
+
+    // Przeszukiwanie grafu nie będzie mogło użyć tego odcinka.
+    road->end1 = NULL;
+    road->end2 = NULL;
+
+    Vector **replacementParts = calloc(MAX_ROUTE_ID, sizeof(Vector *));
+
+    for (unsigned id = 0; id <= MAX_ROUTE_ID; id++) {
+        Route *route = map->routes[id];
+        if (route == NULL) {
+            continue;
+        }
+
+        replacementParts[id] = findRoute(map, city1, city2, route->roads);
+        if (replacementParts[id] == NULL ||
+            !prepareForReplacingValueWithVector(route->roads, road, replacementParts[id])) {
+            for (size_t j = 0; j <= id; j++) {
+                deleteVector(replacementParts[j], doNothing);
+            }
+            free(replacementParts);
+            return false;
+        }
+    }
+
+
+    for (unsigned id = 0; id <= MAX_ROUTE_ID; id++) {
+        if (map->routes[id] != NULL) {
+            replaceValueWithVector(map->routes[id]->roads, road, replacementParts[id]);
+        }
+    }
+
+    replaceValueWithVector(city1->roads, road, NULL);
+    replaceValueWithVector(city2->roads, road, NULL);
+    free(replacementParts);
+    free(road);
+    return true;
 }
 
 char const *getRouteDescription(Map *map, unsigned routeId) {
     if (map == NULL || routeId == 0 || routeId > MAX_ROUTE_ID || map->routes[routeId] == NULL) {
-        return NULL;
+        char *description = malloc(1);
+        if (description == NULL) {
+            return NULL;
+        }
+        description[0] = '\0';
+        return description;
     }
 
     Route *route = map->routes[routeId];

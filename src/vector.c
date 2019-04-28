@@ -17,19 +17,23 @@ struct VectorStruct {
 
 static inline bool resizeVector(Vector *vector, size_t len);
 
+static void doNothing(__attribute__((unused)) void *arg);
+
 // Implementacja funkcji pomocniczych.
 
 
-static inline bool resizeVector(Vector *vector, const size_t len) {
+static inline bool resizeVector(Vector *vector, size_t len) {
     void **newHolder = realloc(vector->holder, len * sizeof(void *));
     if (newHolder == NULL) {
-        return NULL;
+        return false;
     }
 
     vector->holder = newHolder;
     vector->space = len;
     return true;
 }
+
+static void doNothing(__attribute__((unused)) void *arg) {}
 
 // Funkcje z interfejsu.
 
@@ -65,7 +69,7 @@ bool pushToVector(Vector *vector, void *value) {
     }
 
     if (vector->space == vector->count) {
-        if (!resizeVector(vector, vector->space * 2 + 1)) {
+        if (!resizeVector(vector, vector->space * 2 + 8)) {
             return false;
         }
     }
@@ -112,4 +116,91 @@ void **storageBlockOfVector(Vector *vector) {
     }
 
     return vector->holder;
+}
+
+bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
+    if (!prepareForReplacingValueWithVector(vector, value, part)) {
+        return false;
+    }
+
+    // Liczone dla indeksu plus jeden, żeby nie przekręcić wartości.
+    size_t index = vector->count;
+    while (index > 0) {
+        if (vector->holder[index - 1] == value) {
+            break;
+        }
+
+        index--;
+    }
+
+    if (index == 0) {
+        return false;
+    }
+    index--;
+
+    // Działa dla [part == NULL].
+    size_t partCount = sizeOfVector(part);
+    for (size_t i = vector->count - 1; i > index; i--) {
+        vector->holder[i - 1 + partCount] = vector->holder[i];
+    }
+    for (size_t i = 0; i < partCount; i++) {
+        vector->holder[index + i] = part->holder[i];
+    }
+
+    size_t totalCount = vector->count + partCount - 1;
+    vector->count = totalCount;
+    deleteVector(part, doNothing);
+    return true;
+}
+
+bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *part) {
+    if (vector == NULL || part == NULL || isEmptyVector(vector)) {
+        return false;
+    }
+
+    if (isEmptyVector(part)) {
+        return true;
+    }
+
+    // Liczone dla indeksu plus jeden, żeby nie przekręcić wartości.
+    size_t index = vector->count;
+    while (index > 0) {
+        if (vector->holder[index - 1] == value) {
+            break;
+        }
+
+        index--;
+    }
+
+    if (index == 0) {
+        return false;
+    }
+    index--;
+
+    size_t totalCount = vector->count + part->count - 1;
+    if (totalCount > vector->space) {
+        size_t newSize = totalCount;
+        if (newSize <= vector->space * 2) {
+            newSize = vector->space * 2 + 1;
+        }
+        if (!resizeVector(vector, newSize)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool existsInVector(Vector *vector, void *value) {
+    if (vector == NULL) {
+        return false;
+    }
+
+    for (size_t i = 0; i < vector->count; i++) {
+        if (vector->holder[i] == value) {
+            return true;
+        }
+    }
+
+    return false;
 }
