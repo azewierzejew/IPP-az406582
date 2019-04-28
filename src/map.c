@@ -12,21 +12,22 @@
 #include <inttypes.h>
 
 
-// Definicje typów.
+/* Definicje typów. */
 
 typedef struct RoadStruct Road;
 typedef struct CityStruct City;
 typedef struct RouteStruct Route;
 typedef struct DistanceStruct Distance;
 typedef struct RouteSearchHeapEntryStruct RouteSearchHeapEntry;
+typedef struct RouteSearchAnswerStruct RouteSearchAnswer;
 
 
-// Deklaracje struktur.
+/* Deklaracje struktur. */
 struct RoadStruct {
     int lastRepaired;
-    unsigned length;
     City *end1;
     City *end2;
+    unsigned length;
 };
 
 struct CityStruct {
@@ -57,10 +58,16 @@ struct RouteSearchHeapEntryStruct {
     City *city;
 };
 
+struct RouteSearchAnswerStruct {
+    int count;
+    Vector *roads;
+    Distance distance;
+};
 
-// Stałe globalne.
 
-static const Distance WORST_DISTANCE = {UINT64_MAX, INT_MIN};
+/* Stałe globalne. */
+
+static const Distance WORST_DISTANCE = {UINT64_MAX - UINT_MAX, INT_MIN};
 static const Distance BASE_DISTANCE = {0, INT_MAX};
 static const unsigned MAX_ROUTE_ID = 999;
 static const size_t MAX_LENGTH_LENGTH = 10;
@@ -68,7 +75,7 @@ static const size_t MAX_YEAR_LENGTH = 11;
 static const size_t MAX_ROUTE_ID_LENGTH = 3;
 
 
-// Funkcje pomocnicze.
+/* Funkcje pomocnicze. */
 
 static City *initCity(const char *name, size_t id);
 
@@ -77,8 +84,6 @@ static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2);
 static Route *initRoute(Vector *roads, City *end1, City *end2);
 
 static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city);
-
-static Distance addRoadToDistance(Distance distance, Road *road);
 
 static void doNothing(void *arg);
 
@@ -96,11 +101,15 @@ static City *otherRoadEnd(Road *road, City *end);
 
 static Road *findRoad(City *city1, City *city2);
 
+static Distance addRoadToDistance(Distance distance, Road *road);
+
+static Distance combineDistances(Distance distance1, Distance distance2);
+
 static int compareDistances(Distance distance1, Distance distance2);
 
 static int compareRouteSearchHeapEntries(void *heapEntry1Void, void *heapEntry2Void);
 
-static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads);
+static RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoads);
 
 static City *addCity(Map *map, const char *cityName);
 
@@ -110,9 +119,10 @@ static void addUnsignedToDescription(char **description, unsigned number);
 
 static void addIntToDescription(char **description, int number);
 
-static Distance calculateDistance(Vector *roadsVector);
+static bool checkRouteOrientation(Route *route, City *city1, City *city2);
 
-// Implementacja funkcji pomocniczych.
+
+/* Implementacja funkcji pomocniczych. */
 
 static City *initCity(const char *name, size_t id) {
     City *city = malloc(sizeof(City));
@@ -175,16 +185,6 @@ static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city) {
     return entry;
 }
 
-static Distance addRoadToDistance(Distance distance, Road *road) {
-    Distance newDistance = distance;
-    newDistance.length += road->length;
-    if (road->lastRepaired <
-        distance.lastRepaired) {
-        newDistance.lastRepaired = road->lastRepaired;
-    }
-    return newDistance;
-}
-
 static void doNothing(__attribute__((unused)) void *arg) {}
 
 static void deleteRoad(void *roadVoid) {
@@ -195,7 +195,11 @@ static void deleteRoad(void *roadVoid) {
 
     /* Droga musi być usunięta z obu końców i nie ma roku 0,
      * więc rok naprawy 0 oznacza połowiczne usunięcie. */
-    if (road->lastRepaired == 0) { free(road); } else { road->lastRepaired = 0; }
+    if (road->lastRepaired == 0) {
+        free(road);
+    } else {
+        road->lastRepaired = 0;
+    }
 }
 
 static void deleteCity(void *cityVoid) {
@@ -262,7 +266,7 @@ static Road *findRoad(City *city1, City *city2) {
 
     size_t len = sizeOfVector(city1->roads);
 
-    // Dla wydajności zamieniane są miasta jeśli z drugiego wychodzi mniej odcinków.
+    /* Dla wydajności zamieniane są miasta jeśli z drugiego wychodzi mniej odcinków. */
     {
         size_t len2 = sizeOfVector(city2->roads);
         if (len > len2) {
@@ -281,6 +285,24 @@ static Road *findRoad(City *city1, City *city2) {
         }
     }
     return road;
+}
+
+static Distance addRoadToDistance(Distance distance, Road *road) {
+    Distance newDistance = distance;
+    newDistance.length += road->length;
+    if (road->lastRepaired < newDistance.lastRepaired) {
+        newDistance.lastRepaired = road->lastRepaired;
+    }
+    return newDistance;
+}
+
+static Distance combineDistances(Distance distance1, Distance distance2) {
+    Distance newDistance = distance1;
+    newDistance.length += distance2.length;
+    if (distance2.lastRepaired < newDistance.lastRepaired) {
+        newDistance.lastRepaired = distance2.lastRepaired;
+    }
+    return newDistance;
 }
 
 static int compareDistances(Distance distance1, Distance distance2) {
@@ -310,15 +332,19 @@ static int compareRouteSearchHeapEntries(void *heapEntry1Void, void *heapEntry2V
     return compareDistances(entry1->distance, entry2->distance);
 }
 
-static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) {
+static RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) {
+    RouteSearchAnswer answer;
+    answer.count = -1;
+    answer.roads = NULL;
+    answer.distance = WORST_DISTANCE;
     if (map == NULL || city1 == NULL || city2 == NULL) {
-        return NULL;
+        return answer;
     }
 
     size_t cityCount = map->cityCount;
     Distance *distances = malloc(sizeof(Distance) * cityCount);
     if (distances == NULL) {
-        return NULL;
+        return answer;
     }
 
     for (size_t i = 0; i < cityCount; i++) {
@@ -328,16 +354,20 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
     bool *blockedCities = calloc(cityCount, sizeof(bool));
     if (blockedCities == NULL) {
         free(distances);
-        return NULL;
+        return answer;
     }
     {
         size_t usedRoadsCount = sizeOfVector(usedRoads);
         Road **usedRoadsArray = (Road **) storageBlockOfVector(usedRoads);
         for (size_t i = 0; i < usedRoadsCount; i++) {
-            blockedCities[usedRoadsArray[i]->end1->id] = true;
-            blockedCities[usedRoadsArray[i]->end2->id] = true;
+            if (usedRoadsArray[i]->end1 != NULL) {
+                blockedCities[usedRoadsArray[i]->end1->id] = true;
+            }
+            if (usedRoadsArray[i]->end2 != NULL) {
+                blockedCities[usedRoadsArray[i]->end2->id] = true;
+            }
         }
-        // Miasta końcowe mogą wystąpić na liście, więc trzeba je odznaczyć.
+        /* Miasta końcowe mogą wystąpić na liście, więc trzeba je odznaczyć. */
         blockedCities[city1->id] = false;
         blockedCities[city2->id] = false;
     }
@@ -346,27 +376,28 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
     if (heap == NULL) {
         free(distances);
         free(blockedCities);
-        return NULL;
+        return answer;
     }
     distances[city2->id] = BASE_DISTANCE;
     {
-        // Szukana jest droga z city2 do city1, żeby odbudowywując ją od tyłu była w dobrej kolejności.
+        /* Szukana jest droga z city2 do city1, żeby odbudowywując ją od tyłu była w dobrej kolejności. */
         RouteSearchHeapEntry *baseEntry = initHeapEntry(distances[city2->id], city2);
         if (baseEntry == NULL || !addToHeap(heap, baseEntry)) {
             free(distances);
             free(blockedCities);
             deleteHeap(heap, free);
-            return NULL;
+            return answer;
         }
     }
+
     while (!isEmptyHeap(heap)) {
         RouteSearchHeapEntry *nextEntry = getMinimumFromHeap(heap);
         Distance distance = nextEntry->distance;
         City *city = nextEntry->city;
         free(nextEntry);
 
-        if (blockedCities[city->id] ||
-            compareDistances(distance, distances[city->id]) > 0) {
+
+        if (blockedCities[city->id] || compareDistances(distance, distances[city->id]) > 0) {
             continue;
         }
 
@@ -381,10 +412,12 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
         Road **roads = (Road **) storageBlockOfVector(city->roads);
         for (size_t i = 0; i < roadCount; i++) {
             Road *road = roads[i];
-            City *newCity = otherRoadEnd(road, city);
-            if (newCity == NULL) {
+            /* [road->length == 0] oznacza że odcinek nie jest dostępny. */
+            if (road->length == 0) {
                 continue;
             }
+
+            City *newCity = otherRoadEnd(road, city);
             Distance newDistance = addRoadToDistance(distance, road);
 
             if (compareDistances(newDistance, distances[newCity->id]) < 0) {
@@ -395,16 +428,15 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
                     free(distances);
                     free(blockedCities);
                     deleteHeap(heap, free);
-                    return NULL;
+                    return answer;
                 }
             }
         }
     }
 
     deleteHeap(heap, free);
-    heap = NULL;
 
-    // Żeby nie przejść przez zablokowane miasta, ustawiany jest dla nich najgorszy wynik.
+    /* Żeby nie przejść przez zablokowane miasta, ustawiany jest dla nich najgorszy wynik. */
     for (size_t i = 0;
          i < cityCount; i++) {
         if (blockedCities[i]) {
@@ -413,17 +445,20 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
     }
 
     free(blockedCities);
-    blockedCities = NULL;
 
     Vector *route = initVector();
     if (route == NULL) {
         free(distances);
-        return NULL;
+        return answer;
     }
 
     City *position = city1;
+    Distance currentDistance = BASE_DISTANCE;
+    Distance endDistance = distances[city1->id];
+    answer.distance = endDistance;
     while (position != city2) {
         City *newPosition = NULL;
+        Distance newCurrentDistance = WORST_DISTANCE;
         size_t roadCount = sizeOfVector(position->roads);
         Road **roads = (Road **) storageBlockOfVector(position->roads);
 
@@ -434,31 +469,38 @@ static Vector *findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) 
                 continue;
             }
             Distance newDistance = addRoadToDistance(distances[newCity->id], road);
+            newDistance = combineDistances(newDistance, currentDistance);
 
-            // Sprawdzenie czy da się uzyskać dobry dystans przychodząc z [newCity].
-            if (compareDistances(newDistance, distances[position->id]) == 0) {
+            /* Sprawdzenie czy da się uzyskać dobry dystans przychodząc z [newCity]. */
+            if (compareDistances(newDistance, endDistance) == 0) {
 
-                // Jeśli [newPosition != NULL] to są dwie możliwe drogi.
+                /* Jeśli [newPosition != NULL] to są dwie możliwe drogi. */
                 if (newPosition != NULL || !pushToVector(route, road)) {
                     free(distances);
                     deleteVector(route, doNothing);
-                    return NULL;
+                    answer.count = 2;
+                    return answer;
                 }
                 newPosition = newCity;
+                newCurrentDistance = addRoadToDistance(currentDistance, road);
             }
         }
 
         if (newPosition == NULL) {
             free(distances);
             deleteVector(route, doNothing);
-            return NULL;
+            answer.count = 0;
+            return answer;
         }
 
         position = newPosition;
+        currentDistance = newCurrentDistance;
     }
 
     free(distances);
-    return route;
+    answer.roads = route;
+    answer.count = 1;
+    return answer;
 }
 
 static City *addCity(Map *map, const char *cityName) {
@@ -501,24 +543,43 @@ static void addIntToDescription(char **description, int number) {
     *description += strlen(*description);
 }
 
-static Distance calculateDistance(Vector *roadsVector) {
-    Distance distance = BASE_DISTANCE;
-    if (roadsVector == NULL) {
-        return distance;
+static bool checkRouteOrientation(Route *route, City *city1, City *city2) {
+    if (route == NULL) {
+        return false;
     }
 
-    size_t roadCount = sizeOfVector(roadsVector);
-    Road **roads = (Road **) storageBlockOfVector(roadsVector);
+    if (city1 == city2) {
+        return false;
+    }
 
+    City *cityPair[2] = {city1, city2};
+    size_t correctCount = 0;
+
+    size_t roadCount = sizeOfVector(route->roads);
+    Road **roads = (Road **) storageBlockOfVector(route->roads);
+
+    City *position = route->end1;
     for (size_t i = 0; i < roadCount; i++) {
-        distance = addRoadToDistance(distance, roads[i]);
+        if (position == cityPair[correctCount]) {
+            correctCount++;
+            if (correctCount == 2) {
+                return true;
+            }
+        }
+        position = otherRoadEnd(roads[i], position);
+    }
+    if (position == cityPair[correctCount]) {
+        correctCount++;
+        if (correctCount == 2) {
+            return true;
+        }
     }
 
-    return distance;
+    return false;
 }
 
 
-// Funkcje z interfejsu.
+/* Funkcje z interfejsu. */
 
 Map *newMap() {
     Map *map = malloc(sizeof(Map));
@@ -549,7 +610,7 @@ void deleteMap(Map *map) {
 
 bool addRoad(Map *map, const char *cityName1, const char *cityName2,
              unsigned length, int builtYear) {
-    if (map == NULL || builtYear == 0) {
+    if (map == NULL || builtYear == 0 || length == 0) {
         return false;
     }
 
@@ -642,7 +703,7 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
         return false;
     }
 
-    Vector *roads = findRoute(map, city1, city2, NULL);
+    Vector *roads = findRoute(map, city1, city2, NULL).roads;
     if (roads == NULL) {
         return false;
     }
@@ -676,38 +737,82 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
     if (route->end1 == city || route->end2 == city) {
         return false;
     }
+    {
+        size_t usedRoadsCount = sizeOfVector(route->roads);
+        Road **usedRoadsArray = (Road **) storageBlockOfVector(route->roads);
+        for (size_t i = 0; i < usedRoadsCount; i++) {
+            if (usedRoadsArray[i]->end1 == city || usedRoadsArray[i]->end2 == city) {
+                return false;
+            }
+        }
+    }
 
-    Vector *roads1 = findRoute(map, city, route->end1, route->roads);
-    Vector *roads2 = findRoute(map, route->end2, city, route->roads);
+    RouteSearchAnswer answer1 = findRoute(map, city, route->end1, route->roads);
+    RouteSearchAnswer answer2 = findRoute(map, route->end2, city, route->roads);
+
+    /* W którymś wyszukiwaniu nastąpił błąd. */
+    if (answer1.count == -1 || answer2.count == -1) {
+        deleteVector(answer1.roads, doNothing);
+        deleteVector(answer2.roads, doNothing);
+        return false;
+    }
+
+    /* Żadne wyszukiwanie nie znalazło dokładnie jednego wyniku. */
+    if (answer1.count != 1 && answer2.count != 1) {
+        deleteVector(answer1.roads, doNothing);
+        deleteVector(answer2.roads, doNothing);
+        return false;
+    }
 
     bool connectToEnd1;
-    if (roads1 == NULL) {
-        if (roads2 == NULL) {
-            return false;
-        } else {
-            connectToEnd1 = false;
-        }
-    } else {
-        if (roads2 == NULL) {
+    if (answer1.count == 1) {
+        if (answer2.count == 0) {
             connectToEnd1 = true;
-        } else {
-            Distance distance1 = calculateDistance(roads1);
-            Distance distance2 = calculateDistance(roads2);
+        } else if (answer2.count == 1) {
+            int comparison = compareDistances(answer1.distance, answer2.distance);
 
-            int comparison = compareDistances(distance1, distance2);
             if (comparison < 0) {
                 connectToEnd1 = true;
             } else if (comparison > 0) {
                 connectToEnd1 = false;
             } else {
-                deleteVector(roads1, doNothing);
-                deleteVector(roads2, doNothing);
+                deleteVector(answer1.roads, doNothing);
+                deleteVector(answer2.roads, doNothing);
                 return false;
             }
+        } else {
+            /* Więcej niż jeden wynik w drugim szukaniu,
+             * więc da się tylko gdy w pierwszym jest ściśle lepszy dystans. */
+            int comparison = compareDistances(answer1.distance, answer2.distance);
 
+            if (comparison < 0) {
+                connectToEnd1 = true;
+            } else {
+                deleteVector(answer1.roads, doNothing);
+                deleteVector(answer2.roads, doNothing);
+                return false;
+            }
+        }
+    } else { /* [answer1.count != 1] czyli [answer2.count == 1]. */
+        if (answer1.count == 0) {
+            connectToEnd1 = false;
+        } else {
+            /* Więcej niż jeden wynik w pierwszym szukaniu,
+             * więc da się tylko gdy w drugim jest ściśle lepszy dystans. */
+            int comparison = compareDistances(answer1.distance, answer2.distance);
+
+            if (comparison > 0) {
+                connectToEnd1 = false;
+            } else {
+                deleteVector(answer1.roads, doNothing);
+                deleteVector(answer2.roads, doNothing);
+                return false;
+            }
         }
     }
 
+    Vector *roads1 = answer1.roads;
+    Vector *roads2 = answer2.roads;
     if (connectToEnd1) {
         deleteVector(roads2, doNothing);
         size_t oldRoadCount = sizeOfVector(route->roads);
@@ -766,11 +871,15 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
         return false;
     }
 
-    // Przeszukiwanie grafu nie będzie mogło użyć tego odcinka.
-    road->end1 = NULL;
-    road->end2 = NULL;
+    /* Przeszukiwanie grafu nie będzie mogło użyć tego odcinka. */
+    unsigned oldLength = road->length;
+    road->length = 0;
 
-    Vector **replacementParts = calloc(MAX_ROUTE_ID, sizeof(Vector *));
+    Vector **replacementParts = calloc(MAX_ROUTE_ID + 1, sizeof(Vector *));
+    if (replacementParts == NULL) {
+        road->length = oldLength;
+        return false;
+    }
 
     for (unsigned id = 0; id <= MAX_ROUTE_ID; id++) {
         Route *route = map->routes[id];
@@ -778,26 +887,36 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
             continue;
         }
 
-        replacementParts[id] = findRoute(map, city1, city2, route->roads);
+        if (!existsInVector(route->roads, road)) {
+            continue;
+        }
+
+        if (checkRouteOrientation(route, city1, city2)) {
+            replacementParts[id] = findRoute(map, city1, city2, route->roads).roads;
+        } else {
+            replacementParts[id] = findRoute(map, city2, city1, route->roads).roads;
+        }
         if (replacementParts[id] == NULL ||
             !prepareForReplacingValueWithVector(route->roads, road, replacementParts[id])) {
             for (size_t j = 0; j <= id; j++) {
                 deleteVector(replacementParts[j], doNothing);
             }
             free(replacementParts);
+            road->length = oldLength;
             return false;
         }
     }
 
 
     for (unsigned id = 0; id <= MAX_ROUTE_ID; id++) {
-        if (map->routes[id] != NULL) {
+        if (map->routes[id] != NULL && replacementParts[id] != NULL) {
+            // Jest pewność, że się powiedzie.
             replaceValueWithVector(map->routes[id]->roads, road, replacementParts[id]);
         }
     }
 
-    replaceValueWithVector(city1->roads, road, NULL);
-    replaceValueWithVector(city2->roads, road, NULL);
+    popFromVector(city1->roads, road, doNothing);
+    popFromVector(city2->roads, road, doNothing);
     free(replacementParts);
     free(road);
     return true;

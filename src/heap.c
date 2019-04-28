@@ -97,6 +97,3 @@ void *getMinimumFromHeap(Heap *heap) {
 
     return minimum;
 }
-
-
-

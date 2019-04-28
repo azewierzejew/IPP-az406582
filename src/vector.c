@@ -138,16 +138,15 @@ bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
     }
     index--;
 
-    // Działa dla [part == NULL].
-    size_t partCount = sizeOfVector(part);
     for (size_t i = vector->count - 1; i > index; i--) {
-        vector->holder[i - 1 + partCount] = vector->holder[i];
+        vector->holder[i - 1 + part->count] = vector->holder[i];
     }
-    for (size_t i = 0; i < partCount; i++) {
+
+    for (size_t i = 0; i < part->count; i++) {
         vector->holder[index + i] = part->holder[i];
     }
 
-    size_t totalCount = vector->count + partCount - 1;
+    size_t totalCount = vector->count + part->count - 1;
     vector->count = totalCount;
     deleteVector(part, doNothing);
     return true;
@@ -156,10 +155,6 @@ bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
 bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *part) {
     if (vector == NULL || part == NULL || isEmptyVector(vector)) {
         return false;
-    }
-
-    if (isEmptyVector(part)) {
-        return true;
     }
 
     // Liczone dla indeksu plus jeden, żeby nie przekręcić wartości.
@@ -175,7 +170,10 @@ bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *par
     if (index == 0) {
         return false;
     }
-    index--;
+
+    if (isEmptyVector(part)) {
+        return true;
+    }
 
     size_t totalCount = vector->count + part->count - 1;
     if (totalCount > vector->space) {
