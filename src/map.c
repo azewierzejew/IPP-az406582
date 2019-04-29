@@ -277,7 +277,8 @@ Map *newMap() {
     map->cities = initDict();
     map->routes = calloc(MAX_ROUTE_ID + 1, sizeof(Route));
     map->cityCount = 0;
-    if (map->cities == NULL || map->routes == NULL) {
+    map->doneRoutes = initVector();
+    if (map->cities == NULL || map->routes == NULL || map->doneRoutes == NULL) {
         deleteMap(map);
         return NULL;
     }
@@ -401,6 +402,17 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
         return false;
     }
 
+    unsigned *id = malloc(sizeof(unsigned));
+    if (id == NULL) {
+        deleteVector(roads, doNothing);
+        return false;
+    }
+
+    *id = routeId;
+    if (!pushToVector(map->doneRoutes, id)) {
+        deleteVector(roads, doNothing);
+        return false;
+    }
     map->routes[routeId] = route;
     return true;
 }
@@ -568,7 +580,10 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
         return false;
     }
 
-    for (unsigned id = 0; id <= MAX_ROUTE_ID; id++) {
+    size_t doneRouteCount = sizeOfVector(map->doneRoutes);
+    unsigned **doneRoutes = (unsigned **) storageBlockOfVector(map->doneRoutes);
+    for (size_t i = 0; i < doneRouteCount; i++) {
+        unsigned id = *doneRoutes[i];
         Route *route = map->routes[id];
         if (route == NULL) {
             continue;
@@ -595,7 +610,8 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     }
 
 
-    for (unsigned id = 0; id <= MAX_ROUTE_ID; id++) {
+    for (size_t i = 0; i < doneRouteCount; i++) {
+        unsigned id = *doneRoutes[i];
         if (map->routes[id] != NULL && replacementParts[id] != NULL) {
             // Jest pewność, że się powiedzie.
             replaceValueWithVector(map->routes[id]->roads, road, replacementParts[id]);
