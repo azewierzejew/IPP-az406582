@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-struct HeapStruct;
-
 typedef struct HeapStruct Heap;
 
 Heap *initHeap(int comparator(void *, void *));

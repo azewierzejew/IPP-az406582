@@ -82,7 +82,11 @@ void deleteDict(Dict *dict, void valueDestructor(void *)) {
 }
 
 bool addToDict(Dict *dict, const char *word, void *value) {
-    if (dict == NULL) {
+    if (dict == NULL || word == NULL || value == NULL) {
+        return false;
+    }
+
+    if (valueInDict(dict, word) != NULL) {
         return false;
     }
 
@@ -101,7 +105,7 @@ bool addToDict(Dict *dict, const char *word, void *value) {
 }
 
 void *valueInDict(Dict *dict, const char *word) {
-    if (dict == NULL) {
+    if (dict == NULL || word == NULL) {
         return NULL;
     }
 

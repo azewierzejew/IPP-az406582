@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-struct VectorStruct;
-
 typedef struct VectorStruct Vector;
 
 Vector *initVector();
