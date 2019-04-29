@@ -293,6 +293,7 @@ void deleteMap(Map *map) {
 
     deleteDict(map->cities, deleteCity);
     free(map->routes);
+    deleteVector(map->doneRoutes, free);
     free(map);
 }
 
@@ -404,13 +405,13 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
 
     unsigned *id = malloc(sizeof(unsigned));
     if (id == NULL) {
-        deleteVector(roads, doNothing);
+        deleteRoute(route);
         return false;
     }
 
     *id = routeId;
     if (!pushToVector(map->doneRoutes, id)) {
-        deleteVector(roads, doNothing);
+        deleteRoute(route);
         return false;
     }
     map->routes[routeId] = route;
@@ -600,8 +601,9 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
         }
         if (replacementParts[id] == NULL ||
             !prepareForReplacingValueWithVector(route->roads, road, replacementParts[id])) {
-            for (size_t j = 0; j <= id; j++) {
-                deleteVector(replacementParts[j], doNothing);
+            for (size_t j = 0; j <= i; j++) {
+                size_t id2 = *doneRoutes[j];
+                deleteVector(replacementParts[id2], doNothing);
             }
             free(replacementParts);
             road->length = oldLength;
