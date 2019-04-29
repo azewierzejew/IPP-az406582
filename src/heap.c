@@ -18,13 +18,12 @@ struct HeapStruct {
 
 // Funkcje pomocnicze.
 
-static void doNothing(__attribute__((unused)) void *arg);
+static void doNothing(__attribute__((unused)) void *arg) {}
 
-
-// Implementacja funkcji pomocniczych.
-
-static void doNothing(__attribute__((unused)) void *arg) {
-
+static void swap(void **array, size_t index1, size_t index2) {
+    void *tmp = array[index1];
+    array[index1] = array[index2];
+    array[index2] = tmp;
 }
 
 
@@ -66,36 +65,76 @@ bool addToHeap(Heap *heap, void *value) {
     if (heap == NULL || value == NULL) {
         return false;
     }
-    return pushToVector(heap->elements, value);
+
+    if (!pushToVector(heap->elements, value)) {
+        return false;
+    }
+
+    size_t position = sizeOfVector(heap->elements) - 1;
+    void **elements = storageBlockOfVector(heap->elements);
+    while (position > 0) {
+        size_t upPosition = (position - 1) / 2;
+        if (heap->comparator(elements[position], elements[upPosition]) < 0) {
+            swap(elements, position, upPosition);
+            position = upPosition;
+        } else {
+            break;
+        }
+    }
+    return true;
 }
 
 void *getMinimumFromHeap(Heap *heap) {
     if (heap == NULL) {
         return NULL;
     }
-
     size_t elementCount = sizeOfVector(heap->elements);
+
     void **elements = storageBlockOfVector(heap->elements);
 
-    if (elementCount == 0) {
-        return NULL;
-    }
+    void *minimum = elements[0];
+    swap(elements, 0, elementCount - 1);
+    popFromVector(heap->elements, minimum, doNothing);
+    elementCount--;
 
+    size_t position = 0;
+    while (position < elementCount) {
+        size_t son1Position = position * 2 + 1;
+        size_t son2Position = position * 2 + 2;
 
-    size_t minimumNr = 0;
+        bool biggerThanSon1 = false;
+        if (son1Position < elementCount &&
+            heap->comparator(elements[position], elements[son1Position]) > 0) {
+            biggerThanSon1 = true;
+        }
 
-    for (size_t i = 1; i < elementCount; i++) {
-        if (heap->comparator(elements[i], elements[minimumNr]) < 0) {
-            minimumNr = i;
+        bool biggerThanSon2 = false;
+        if (son2Position < elementCount &&
+            heap->comparator(elements[position], elements[son2Position]) > 0) {
+            biggerThanSon2 = true;
+        }
+
+        if (biggerThanSon1) {
+            if (biggerThanSon2) {
+                if (heap->comparator(elements[son1Position], elements[son2Position]) < 0) {
+                    swap(elements, position, son1Position);
+                    position = son1Position;
+                } else {
+                    swap(elements, position, son2Position);
+                    position = son2Position;
+                }
+            } else {
+                swap(elements, position, son1Position);
+                position = son1Position;
+            }
+        } else {
+            if (biggerThanSon2) {
+                swap(elements, position, son2Position);
+                position = son2Position;
+            } else {
+                break;
+            }
         }
     }
-
-    void *minimum = elements[minimumNr];
-
-    // Zamiana miejsc bo popFromVector przegląda od końca.
-    elements[minimumNr] = elements[elementCount - 1];
-    elements[elementCount - 1] = NULL;
-    popFromVector(heap->elements, NULL, doNothing);
-
     return minimum;
 }

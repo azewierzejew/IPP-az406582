@@ -38,6 +38,8 @@ struct Map {
     Dict *cities;
     /** Wskaźnik na tablicę wskaźników na drogi krajowe. */
     Route **routes;
+    /** Stworzone już drogi krajowe. */
+    Vector *doneRoutes;
     /** Liczba miast na mapie. */
     size_t cityCount;
 };
