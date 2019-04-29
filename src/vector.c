@@ -6,8 +6,13 @@
 
 // Deklaracje struktur.
 
+/** Przechowuje wektor. */
 struct VectorStruct {
-    size_t space, count;
+    /** Ilość aktualnie zaalokowanego miejsca. */
+    size_t space;
+    /** Ilość aktualnie wykorzystanego miejsca. */
+    size_t count;
+    /** Wskaźnik na blok pamięci przetrzymujący wartości. */
     void **holder;
 };
 

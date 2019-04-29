@@ -83,6 +83,10 @@ struct RouteStruct {
  */
 City *otherRoadEnd(Road *road, City *end);
 
+/**
+ * Przyjmuje argument i nic nie robi, wykorzystywane przy usuwaniu struktur.
+ * @param arg - argument
+ */
 void doNothing(void *arg);
 
 #endif //DROGI_MAP_BASICS_H

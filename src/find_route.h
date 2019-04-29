@@ -54,7 +54,7 @@ int compareDistances(Distance distance1, Distance distance2);
  * @param[in] city1 - wskaźnik na pierwsze miasto;
  * @param[in] city2 - wskaźnik na drugie miasto;
  * @param[in] usedRoads - wskaźnik na wektor zużytych dróg (może być NULL).
- * @return struktura @ref RouteSearchAnswer z następującą wartością @ref RouteSearchAnswer.count:
+ * @return struktura @ref RouteSearchAnswer z następującą wartością @ref RouteSearchAnswer.count :
  * - @p -1, jeśli nastąpił błąd lub argumenty sa niepoprawne;
  * - @p 0, jeśli nie ma żadnej drogi;
  * - @p 1, jeśli jest dokładnie jedna droga, wtedy @ref RouteSearchAnswer.roads zawiera @ref Vector odcinków,

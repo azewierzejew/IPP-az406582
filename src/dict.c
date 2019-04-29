@@ -8,17 +8,23 @@
 
 // Definicje typów.
 
+/** Struktura odpowiadająca za jedno słowo w słowniku. */
 typedef struct EntryStruct Entry;
 
 
 // Deklaracje struktur.
 
+/** Przechowuje słowo ze słownika. */
 struct EntryStruct {
+    /** Wskaźnik na napis reprezentujący słowo. */
     char *word;
+    /** Wartość przypisana danemu słowu. */
     void *value;
 };
 
+/** Przechowuje słownik. */
 struct DictStruct {
+    /** Wektor pozycji w słowniku (typu @ref EntryStruct *). */
     Vector *entries;
 };
 

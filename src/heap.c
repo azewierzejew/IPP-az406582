@@ -6,10 +6,12 @@
 
 // Deklaracje struktur.
 
-
+/** Przechowuje kopiec. */
 struct HeapStruct {
+    /** Komparator definiujący porządek w kopcu. */
     int (*comparator)(void *, void *);
 
+    /** Wektor elementów na kopcu. */
     Vector *elements;
 };
 

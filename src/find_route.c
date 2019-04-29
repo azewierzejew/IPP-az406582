@@ -6,10 +6,14 @@
 #include <limits.h>
 
 
+/** Struktura dane potrzebne do wykorzystanie kopca w wyszukiwaniu najkrótszej drogi. */
 typedef struct RouteSearchHeapEntryStruct RouteSearchHeapEntry;
 
+/** Zawiera dane potrzebne do wykorzystania kopca, pozwalająca wybrać najkrótszą drogę z wielu. */
 struct RouteSearchHeapEntryStruct {
+    /** Łączny dystans drogi. */
     Distance distance;
+    /** Miasto końcowe. */
     City *city;
 };
 
