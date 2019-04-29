@@ -1,5 +1,5 @@
 /** @file
- * Interfejs modułu znajdującego ścieżki w grafie miast.
+ * Interfejs klasy przechowującej słownik.
  *
  * @author Antoni Żewierżejew <azewierzejew@gmail.com>
  * @date 29.03.2019
@@ -16,8 +16,7 @@
 typedef struct DictStruct Dict;
 
 /**
- * @brief Tworzy nowy słownik.
- * Tworzy nowy słownik bez żadnych słów.
+ * @brief Tworzy nowy słownik bez żadnych słów.
  * @return Wskaźnik na utworzony słownik lub @p NULL, gdy nie udało się
  * zaalokować pamięci.
  */
@@ -34,13 +33,12 @@ void deleteDict(Dict *dict, void valueDestructor(void *));
 
 /**
  * @brief Dodaje do słownika słowo.
- * Dla danego słowa, przypisuje mu w słowniku wartość.
+ * Dla danego słowa, przypisuje mu w słowniku niezerową wartość.
  * @param[in,out] dict - wskaźnik na słownik;
  * @param[in] word     - wskaźnik na napis reprezentujący słowo;
  * @param[in] value    - wartość do przypisania
  * @return Wartość @p true, jeśli słowo zostało dodane.
- * Wartość @p false, jeśli wystąpił błąd: argumenty są niepoprawne,
- * brak pamięci, słowo już jest w słowniku.
+ * Wartość @p false, jeśli wystąpił błąd: argumenty są niepoprawne lub brak pamięci.
  */
 bool addToDict(Dict *dict, const char *word, void *value);
 

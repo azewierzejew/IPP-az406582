@@ -86,8 +86,13 @@ bool addToDict(Dict *dict, const char *word, void *value) {
         return false;
     }
 
-    if (valueInDict(dict, word) != NULL) {
-        return false;
+    size_t entryCount = sizeOfVector(dict->entries);
+    Entry **entries = (Entry **) storageBlockOfVector(dict->entries);
+    for (size_t i = 0; i < entryCount; i++) {
+        if (strcmp(word, entries[i]->word) == 0) {
+            entries[i]->value = value;
+            return true;
+        }
     }
 
     Entry *entry = initEntry(word, value);
