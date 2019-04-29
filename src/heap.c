@@ -61,7 +61,7 @@ bool isEmptyHeap(Heap *heap) {
 }
 
 bool addToHeap(Heap *heap, void *value) {
-    if (heap == NULL) {
+    if (heap == NULL || value == NULL) {
         return false;
     }
     return pushToVector(heap->elements, value);

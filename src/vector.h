@@ -22,8 +22,7 @@ Vector *initVector();
 
 /**
  * @brief Usuwa wektor.
- * Usuwa wektor wskazywane przez @p vector,
- * wywołując @p valueDestructor dla każdej wartości.
+ * Usuwa wektor, wywołując @p valueDestructor dla każdej wartości.
  * @param[in,out] vector  - wskaźnik na wektor;
  * @param[in] valueDestructor - funkcja do usuwania wartości z pamięci.
  */
