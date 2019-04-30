@@ -115,12 +115,8 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
         size_t usedRoadsCount = sizeOfVector(usedRoads);
         Road **usedRoadsArray = (Road **) storageBlockOfVector(usedRoads);
         for (size_t i = 0; i < usedRoadsCount; i++) {
-            if (usedRoadsArray[i]->end1 != NULL) {
-                blockedCities[usedRoadsArray[i]->end1->id] = true;
-            }
-            if (usedRoadsArray[i]->end2 != NULL) {
-                blockedCities[usedRoadsArray[i]->end2->id] = true;
-            }
+            blockedCities[usedRoadsArray[i]->end1->id] = true;
+            blockedCities[usedRoadsArray[i]->end2->id] = true;
         }
         /* Miasta końcowe mogą wystąpić na liście, więc trzeba je odznaczyć. */
         blockedCities[city1->id] = false;
@@ -135,7 +131,7 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
     }
     distances[city2->id] = BASE_DISTANCE;
     {
-        /* Szukana jest droga z city2 do city1, żeby odbudowywując ją od tyłu była w dobrej kolejności. */
+        /* Szukana jest droga z city2 do city1, żeby odbudowując ją od tyłu była w dobrej kolejności. */
         RouteSearchHeapEntry *baseEntry = initHeapEntry(distances[city2->id], city2);
         if (baseEntry == NULL || !addToHeap(heap, baseEntry)) {
             free(distances);
