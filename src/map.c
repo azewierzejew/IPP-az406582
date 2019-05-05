@@ -141,7 +141,7 @@ static void deleteRoute(void *routeVoid) {
 }
 
 static bool correctChar(char a) {
-    return !(a >= 0 && a <= 31);
+    return !(a >= 0 && a <= 31) && a != ';';
 }
 
 static bool checkName(const char *name) {
@@ -628,13 +628,12 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
 }
 
 char const *getRouteDescription(Map *map, unsigned routeId) {
-    if (map == NULL || routeId == 0 || routeId > MAX_ROUTE_ID || map->routes[routeId] == NULL) {
-        char *description = malloc(1);
-        if (description == NULL) {
-            return NULL;
-        }
-        description[0] = '\0';
-        return description;
+    if (map == NULL || routeId == 0 || routeId > MAX_ROUTE_ID) {
+        return NULL;
+    }
+
+    if (map->routes[routeId] == NULL) {
+        return calloc(1, sizeof(char));
     }
 
     Route *route = map->routes[routeId];
