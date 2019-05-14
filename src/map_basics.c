@@ -14,5 +14,3 @@ City *otherRoadEnd(Road *road, City *end) {
     }
     return NULL;
 }
-
-void doNothing(__attribute__((unused)) void *arg) {}

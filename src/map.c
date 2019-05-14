@@ -3,6 +3,7 @@
 #include "dict.h"
 #include "map_basics.h"
 #include "find_route.h"
+#include "utility.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -615,7 +616,7 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     for (size_t i = 0; i < doneRouteCount; i++) {
         unsigned id = *doneRoutes[i];
         if (map->routes[id] != NULL && replacementParts[id] != NULL) {
-            // Jest pewność, że się powiedzie.
+            /* Jest pewność, że się powiedzie. */
             replaceValueWithVector(map->routes[id]->roads, road, replacementParts[id]);
         }
     }

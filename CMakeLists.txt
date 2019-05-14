@@ -33,6 +33,8 @@ set(SOURCE_FILES
         src/find_route.h
         src/map.c
         src/map.h
+        src/utility.c
+        src/utility.h
         src/map_main.c)
 
 # Wskazujemy plik wykonywalny.

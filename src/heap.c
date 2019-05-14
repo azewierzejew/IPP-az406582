@@ -1,6 +1,7 @@
 #include "heap.h"
 #include "vector.h"
 #include "map_basics.h"
+#include "utility.h"
 
 #include <stdbool.h>
 

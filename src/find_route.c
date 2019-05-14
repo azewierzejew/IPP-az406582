@@ -1,6 +1,7 @@
 #include "find_route.h"
 #include "heap.h"
 #include "map_basics.h"
+#include "utility.h"
 
 #include <inttypes.h>
 #include <limits.h>
