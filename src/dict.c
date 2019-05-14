@@ -11,6 +11,7 @@
 
 /** Struktura odpowiadająca za jedno słowo w słowniku. */
 typedef struct EntryStruct Entry;
+/** Struktura odpowiadająca za kubełek słów o wspólnym haszu. */
 typedef struct BucketStruct Bucket;
 
 
@@ -24,15 +25,24 @@ struct EntryStruct {
     void *value;
 };
 
+/**
+ * Kubełek słów o jednakowym haszu.
+ * Kubełki są układane w strukturę drzewa BST ze względu na hash.
+ */
 struct BucketStruct {
+    /** Hasz danego kubełka. */
     uint64_t hash;
-    Bucket *left, *right;
-    /** Wektor pozycji w kubełku (typu @ref EntryStruct *). */
+    /** Lewy kubełek-syn. */
+    Bucket *left;
+    /** Prawy kubełek-syn. */
+    Bucket *right;
+    /** Wektor słow w kubełku (typu @ref EntryStruct *). */
     Vector *entries;
 };
 
 /** Przechowuje słownik. */
 struct DictStruct {
+    /** Korzeń drzewa BST kubełków. */
     Bucket *root;
 };
 
