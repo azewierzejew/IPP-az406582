@@ -74,7 +74,7 @@ bool pushToVector(Vector *vector, void *value) {
     }
 
     if (vector->space == vector->count) {
-        if (!resizeVector(vector, vector->space * 2 + 8)) {
+        if (!resizeVector(vector, vector->space * 2 + 2)) {
             return false;
         }
     }
