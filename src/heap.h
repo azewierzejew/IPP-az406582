@@ -55,4 +55,4 @@ bool addToHeap(Heap *heap, void *value);
  */
 void *getMinimumFromHeap(Heap *heap);
 
-#endif //DROGI_HEAP_H
+#endif /* DROGI_HEAP_H */

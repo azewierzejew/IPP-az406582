@@ -18,9 +18,13 @@ struct RouteSearchHeapEntryStruct {
 };
 
 
+/* Stałe globalne. */
+
 static const Distance WORST_DISTANCE = {UINT64_MAX - UINT_MAX, INT_MIN};
 static const Distance BASE_DISTANCE = {0, INT_MAX};
 
+
+/* Funkcje pomocnicze. */
 
 static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city);
 
@@ -29,6 +33,9 @@ static int compareRouteSearchHeapEntries(void *heapEntry1Void, void *heapEntry2V
 static Distance addRoadToDistance(Distance distance, Road *road);
 
 static Distance combineDistances(Distance distance1, Distance distance2);
+
+
+/* Implementacja funkcji pomocniczych. */
 
 static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city) {
     RouteSearchHeapEntry *entry = malloc(sizeof(RouteSearchHeapEntry));
@@ -215,6 +222,10 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
 
         for (size_t i = 0; i < roadCount; i++) {
             Road *road = roads[i];
+            if (road->length == 0) {
+                continue;
+            }
+
             City *newCity = otherRoadEnd(road, position);
             if (newCity == NULL) {
                 continue;

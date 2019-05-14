@@ -91,4 +91,4 @@ City *otherRoadEnd(Road *road, City *end);
  */
 void doNothing(void *arg);
 
-#endif //DROGI_MAP_BASICS_H
+#endif /* DROGI_MAP_BASICS_H */

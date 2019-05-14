@@ -1,10 +1,11 @@
 #include "heap.h"
 #include "vector.h"
+#include "map_basics.h"
 
 #include <stdbool.h>
 
 
-// Deklaracje struktur.
+/* Deklaracje struktur. */
 
 /** Przechowuje kopiec. */
 struct HeapStruct {
@@ -16,9 +17,7 @@ struct HeapStruct {
 };
 
 
-// Funkcje pomocnicze.
-
-static void doNothing(__attribute__((unused)) void *arg) {}
+/* Funkcje pomocnicze. */
 
 static void swap(void **array, size_t index1, size_t index2) {
     void *tmp = array[index1];
@@ -26,8 +25,23 @@ static void swap(void **array, size_t index1, size_t index2) {
     array[index2] = tmp;
 }
 
+static int heapCompare(Heap *heap, void *element1, void *element2) {
+    if (heap == NULL || (element1 == NULL && element2 == NULL)) {
+        return 0;
+    }
+    /* Jeśli jeden to NULL to uznajemy go za większego, czyli nie będzie wypychany na górę. */
+    if (element1 == NULL) {
+        return 1;
+    }
+    if (element2 == NULL) {
+        return -1;
+    }
 
-// Funkcje z interfejsu.
+    return heap->comparator(element1, element2);
+}
+
+
+/* Funkcje z interfejsu. */
 
 Heap *initHeap(int comparator(void *, void *)) {
     Heap *heap = malloc(sizeof(Heap));
@@ -74,7 +88,7 @@ bool addToHeap(Heap *heap, void *value) {
     void **elements = storageBlockOfVector(heap->elements);
     while (position > 0) {
         size_t upPosition = (position - 1) / 2;
-        if (heap->comparator(elements[position], elements[upPosition]) < 0) {
+        if (heapCompare(heap, elements[position], elements[upPosition]) < 0) {
             swap(elements, position, upPosition);
             position = upPosition;
         } else {
@@ -102,38 +116,22 @@ void *getMinimumFromHeap(Heap *heap) {
         size_t son1Position = position * 2 + 1;
         size_t son2Position = position * 2 + 2;
 
-        bool biggerThanSon1 = false;
-        if (son1Position < elementCount &&
-            heap->comparator(elements[position], elements[son1Position]) > 0) {
-            biggerThanSon1 = true;
-        }
+        void *current = elements[position];
+        void *son1 = (son1Position < elementCount) ? elements[son1Position] : NULL;
+        void *son2 = (son2Position < elementCount) ? elements[son2Position] : NULL;
 
-        bool biggerThanSon2 = false;
-        if (son2Position < elementCount &&
-            heap->comparator(elements[position], elements[son2Position]) > 0) {
-            biggerThanSon2 = true;
-        }
+        bool biggerThanSon1 = heapCompare(heap, current, son1) > 0;
+        bool biggerThanSon2 = heapCompare(heap, current, son2) > 0;
 
-        if (biggerThanSon1) {
-            if (biggerThanSon2) {
-                if (heap->comparator(elements[son1Position], elements[son2Position]) < 0) {
-                    swap(elements, position, son1Position);
-                    position = son1Position;
-                } else {
-                    swap(elements, position, son2Position);
-                    position = son2Position;
-                }
-            } else {
-                swap(elements, position, son1Position);
-                position = son1Position;
-            }
+        /* Zamiana z pierwszym jeśli nie da się zamienić z drugim albo drugi nie jest lepszy. */
+        if (biggerThanSon1 && (!biggerThanSon2 || heapCompare(heap, son1, son2) < 0)) {
+            swap(elements, position, son1Position);
+            position = son1Position;
+        } else if (biggerThanSon2) {
+            swap(elements, position, son2Position);
+            position = son2Position;
         } else {
-            if (biggerThanSon2) {
-                swap(elements, position, son2Position);
-                position = son2Position;
-            } else {
-                break;
-            }
+            break;
         }
     }
     return minimum;

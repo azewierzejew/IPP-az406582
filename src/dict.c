@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "dict.h"
 #include "vector.h"
 
@@ -7,7 +9,7 @@
 #include <inttypes.h>
 
 
-// Definicje typów.
+/* Definicje typów. */
 
 /** Struktura odpowiadająca za jedno słowo w słowniku. */
 typedef struct EntryStruct Entry;
@@ -15,7 +17,7 @@ typedef struct EntryStruct Entry;
 typedef struct BucketStruct Bucket;
 
 
-// Deklaracje struktur.
+/* Deklaracje struktur. */
 
 /** Przechowuje słowo ze słownika. */
 struct EntryStruct {
@@ -47,7 +49,7 @@ struct DictStruct {
 };
 
 
-// Stałe.
+/* Stałe. */
 
 static const uint64_t HASH_MODULO = 1770134209;
 static const uint64_t HASH_START = HASH_MODULO & 0xaaaaaaaa;
@@ -55,7 +57,7 @@ static const uint64_t HASH_MULTIPLIER = 257;
 static const uint64_t HASH_XOR_MASK = 0xff;
 
 
-// Funkcje pomocnicze.
+/* Funkcje pomocnicze. */
 
 static Entry *initEntry(const char *word, void *value);
 
@@ -63,10 +65,10 @@ static Bucket *initBucket(uint64_t hash);
 
 static uint64_t hashWord(const char *word);
 
-static void deleteBucket(Bucket *bucket, void valueDestructor(void *));
+static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *));
 
 
-// Implementacja funkcji pomocniczych.
+/* Implementacja funkcji pomocniczych. */
 
 static Entry *initEntry(const char *word, void *value) {
     Entry *entry = malloc(sizeof(Entry));
@@ -74,12 +76,11 @@ static Entry *initEntry(const char *word, void *value) {
         return NULL;
     }
 
-    entry->word = malloc(sizeof(char) * (strlen(word) + 1));
+    entry->word = strdup(word);
     if (entry->word == NULL) {
         free(entry);
         return NULL;
     }
-    strcpy(entry->word, word);
 
     entry->value = value;
     return entry;
@@ -113,20 +114,21 @@ static uint64_t hashWord(const char *word) {
     while (word[len] != '\0') {
         unsigned char xor = hash & HASH_XOR_MASK;
         uint64_t byte = (unsigned char) word[len] ^xor;
-        hash = (hash * HASH_MULTIPLIER + byte);
+        hash = (hash * HASH_MULTIPLIER + byte) % HASH_MODULO;
         len++;
     }
 
+    hash = (hash * HASH_MULTIPLIER + len) % HASH_MODULO;
     return hash;
 }
 
-static void deleteBucket(Bucket *bucket, void valueDestructor(void *)) {
+static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *)) {
     if (bucket == NULL) {
         return;
     }
 
-    deleteBucket(bucket->left, valueDestructor);
-    deleteBucket(bucket->right, valueDestructor);
+    deleteBucketTree(bucket->left, valueDestructor);
+    deleteBucketTree(bucket->right, valueDestructor);
 
     size_t entryCount = sizeOfVector(bucket->entries);
     Entry **entries = (Entry **) storageBlockOfVector(bucket->entries);
@@ -155,7 +157,7 @@ static Bucket **findBucket(Bucket **bucketPtr, uint64_t hash) {
     return bucketPtr;
 }
 
-// Funkcje z interfejsu.
+/* Funkcje z interfejsu. */
 
 Dict *initDict() {
     Dict *dict = malloc(sizeof(Dict));
@@ -172,7 +174,7 @@ void deleteDict(Dict *dict, void valueDestructor(void *)) {
         return;
     }
 
-    deleteBucket(dict->root, valueDestructor);
+    deleteBucketTree(dict->root, valueDestructor);
     free(dict);
 }
 

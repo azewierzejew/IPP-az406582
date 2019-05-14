@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 
-// Deklaracje struktur.
+/* Deklaracje struktur. */
 
 /** Przechowuje wektor. */
 struct VectorStruct {
@@ -17,14 +17,14 @@ struct VectorStruct {
 };
 
 
-// Funkcje pomocnicze.
+/* Funkcje pomocnicze. */
 
 
 static inline bool resizeVector(Vector *vector, size_t len);
 
 static void doNothing(__attribute__((unused)) void *arg);
 
-// Implementacja funkcji pomocniczych.
+/* Implementacja funkcji pomocniczych. */
 
 
 static inline bool resizeVector(Vector *vector, size_t len) {
@@ -40,7 +40,7 @@ static inline bool resizeVector(Vector *vector, size_t len) {
 
 static void doNothing(__attribute__((unused)) void *arg) {}
 
-// Funkcje z interfejsu.
+/* Funkcje z interfejsu. */
 
 
 Vector *initVector() {
@@ -128,7 +128,7 @@ bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
         return false;
     }
 
-    // Liczone dla indeksu plus jeden, żeby nie przekręcić wartości.
+    /* Liczone dla indeksu plus jeden, żeby nie przekręcić wartości. */
     size_t index = vector->count;
     while (index > 0) {
         if (vector->holder[index - 1] == value) {
@@ -162,7 +162,7 @@ bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *par
         return false;
     }
 
-    // Liczone dla indeksu plus jeden, żeby nie przekręcić wartości.
+    /* Liczone dla indeksu plus jeden, żeby nie przekręcić wartości. */
     size_t index = vector->count;
     while (index > 0) {
         if (vector->holder[index - 1] == value) {
