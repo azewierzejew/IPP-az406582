@@ -54,41 +54,31 @@ static bool stringToInt(const char *str, int *number) {
 }
 
 static bool executeCommand(char *command, size_t len) {
-    if (command == NULL || len == 0) {
-        return false;
-    }
+    Vector *parametersVector = NULL;
+    FAIL_IF(command == NULL || len == 0);
 
-    if (len != strlen(command)) {
-        /* Wczytano zerowy bajt, który jest niepoprawny. */
-        return false;
-    }
+    /* Wczytano zerowy bajt, który jest niepoprawny. */
+    FAIL_IF(len != strlen(command));
 
     /* Usuwanie znaku newline. */
-    if (command[len - 1] != '\n') {
-        return false;
-    }
+    FAIL_IF(command[len - 1] != '\n');
     command[len - 1] = '\0';
 
     if (command[0] == '#') {
         return true;
     }
 
-    Vector *parametersVector = initVector();
-    if (parametersVector == NULL) {
-        goto errorBase;
-    }
+    parametersVector = initVector();
+    FAIL_IF(parametersVector == NULL);
 
     char *nextParameter = getNextParameter(command);
     while (nextParameter != NULL) {
-        if (!pushToVector(parametersVector, nextParameter)) {
-            deleteVector(parametersVector, doNothing);
-            return false;
-        }
+        FAIL_IF(!pushToVector(parametersVector, nextParameter));
         nextParameter = getNextParameter(NULL);
     }
 
     size_t parameterCount = sizeOfVector(parametersVector);
-    const char **parameters = storageBlockOfVector(parametersVector);
+    const char **parameters = (const char **) storageBlockOfVector(parametersVector);
     if (parameterCount == 0) {
         return true;
     }
@@ -102,8 +92,9 @@ static bool executeCommand(char *command, size_t len) {
         }
     }
 
+    FAILURE:
+
     deleteVector(parametersVector, doNothing);
-    errorBase:
     return false;
 }
 
