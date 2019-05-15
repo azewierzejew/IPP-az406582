@@ -68,7 +68,7 @@ void deleteVector(Vector *vector, void valueDestructor(void *)) {
     free(vector);
 }
 
-bool pushToVector(Vector *vector, void *value) {
+bool pushToVector(Vector *vector, void *value) { // TODO nop on NULL
     if (vector == NULL) {
         return false;
     }
@@ -83,7 +83,7 @@ bool pushToVector(Vector *vector, void *value) {
     return true;
 }
 
-void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) {
+void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) { // TODO nop on NULL
     if (vector == NULL) {
         return;
     }
