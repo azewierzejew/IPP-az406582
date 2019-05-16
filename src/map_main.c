@@ -53,7 +53,7 @@ static bool stringToInt(const char *str, int *number) {
     return true;
 }
 
-static bool executeCommand(char *command, size_t len) {
+static bool executeCommand(Map *map, char *command, size_t len) {
     Vector *parametersVector = NULL;
     FAIL_IF(command == NULL || len == 0);
 
@@ -84,17 +84,20 @@ static bool executeCommand(char *command, size_t len) {
     }
 
     if (strcmp(parameters[0], "addRoad") == 0) {
+        FAIL_IF(parameterCount != 5);
         const char *city1Name = parameters[1];
         const char *city2Name = parameters[2];
         unsigned length;
-        if (!stringToUnsigned(parameters[3], &length)) {
-
-        }
+        int builtYear;
+        FAIL_IF(!stringToUnsigned(parameters[3], &length));
+        FAIL_IF(!stringToInt(parameters[4], &builtYear));
+        deleteVector(parametersVector, NULL);
+        return addRoad(map, city1Name, city2Name, length, builtYear);
     }
 
     FAILURE:
 
-    deleteVector(parametersVector, doNothing);
+    deleteVector(parametersVector, NULL);
     return false;
 }
 
@@ -111,7 +114,7 @@ int main() {
 
     while (readLength >= 0) {
         lineNumber++;
-        if (!executeCommand(buff, readLength)) {
+        if (!executeCommand(map, buff, readLength)) {
             fprintf(stderr, "ERROR %"PRIu64"\n", lineNumber);
         }
         readLength = getline(&buff, &len, stdin);
