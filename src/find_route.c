@@ -96,29 +96,27 @@ int compareDistances(Distance distance1, Distance distance2) {
 }
 
 RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoads) {
+    Distance *distances = NULL;
+    bool *blockedCities = NULL;
+    Heap *heap = NULL;
+    Vector *route = NULL;
+
     RouteSearchAnswer answer;
     answer.count = -1;
     answer.roads = NULL;
     answer.distance = WORST_DISTANCE;
-    if (map == NULL || city1 == NULL || city2 == NULL) {
-        return answer;
-    }
+    FAIL_IF(map == NULL || city1 == NULL || city2 == NULL);
 
     size_t cityCount = map->cityCount;
-    Distance *distances = malloc(sizeof(Distance) * cityCount);
-    if (distances == NULL) {
-        return answer;
-    }
+    distances = malloc(sizeof(Distance) * cityCount);
+    FAIL_IF(distances == NULL);
 
     for (size_t i = 0; i < cityCount; i++) {
         distances[i] = WORST_DISTANCE;
     }
 
-    bool *blockedCities = calloc(cityCount, sizeof(bool));
-    if (blockedCities == NULL) {
-        free(distances);
-        return answer;
-    }
+    blockedCities = calloc(cityCount, sizeof(bool));
+    FAIL_IF(blockedCities == NULL);
     {
         size_t usedRoadsCount = sizeOfVector(usedRoads);
         Road **usedRoadsArray = (Road **) storageBlockOfVector(usedRoads);
@@ -131,12 +129,9 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
         blockedCities[city2->id] = false;
     }
 
-    Heap *heap = initHeap(compareRouteSearchHeapEntries);
-    if (heap == NULL) {
-        free(distances);
-        free(blockedCities);
-        return answer;
-    }
+    heap = initHeap(compareRouteSearchHeapEntries);
+    FAIL_IF(heap == NULL);
+
     distances[city2->id] = BASE_DISTANCE;
     {
         /* Szukana jest droga z city2 do city1, żeby odbudowując ją od tyłu była w dobrej kolejności. */
@@ -151,10 +146,10 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
 
     while (!isEmptyHeap(heap)) {
         RouteSearchHeapEntry *nextEntry = getMinimumFromHeap(heap);
+        FAIL_IF(nextEntry == NULL);
         Distance distance = nextEntry->distance;
         City *city = nextEntry->city;
         free(nextEntry);
-
 
         if (blockedCities[city->id] || compareDistances(distance, distances[city->id]) > 0) {
             continue;
@@ -165,7 +160,6 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
         if (city == city1) {
             break;
         }
-
 
         size_t roadCount = sizeOfVector(city->roads);
         Road **roads = (Road **) storageBlockOfVector(city->roads);
@@ -183,17 +177,13 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
                 distances[newCity->id] = newDistance;
                 RouteSearchHeapEntry *newEntry = initHeapEntry(newDistance, newCity);
 
-                if (newEntry == NULL || !addToHeap(heap, newEntry)) {
-                    free(distances);
-                    free(blockedCities);
-                    deleteHeap(heap, free);
-                    return answer;
-                }
+                FAIL_IF(newEntry == NULL || !addToHeap(heap, newEntry));
             }
         }
     }
 
     deleteHeap(heap, free);
+    heap = NULL;
 
     /* Żeby nie przejść przez zablokowane miasta, ustawiany jest dla nich najgorszy wynik. */
     for (size_t i = 0;
@@ -204,12 +194,10 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
     }
 
     free(blockedCities);
+    blockedCities = NULL;
 
-    Vector *route = initVector();
-    if (route == NULL) {
-        free(distances);
-        return answer;
-    }
+    route = initVector();
+    FAIL_IF(route == NULL);
 
     City *position = city1;
     Distance currentDistance = BASE_DISTANCE;
@@ -239,10 +227,8 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
 
                 /* Jeśli [newPosition != NULL] to są dwie możliwe drogi. */
                 if (newPosition != NULL || !pushToVector(route, road)) {
-                    free(distances);
-                    deleteVector(route, NULL);
                     answer.count = 2;
-                    return answer;
+                    FAIL;
                 }
                 newPosition = newCity;
                 newCurrentDistance = addRoadToDistance(currentDistance, road);
@@ -250,10 +236,8 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
         }
 
         if (newPosition == NULL) {
-            free(distances);
-            deleteVector(route, NULL);
             answer.count = 0;
-            return answer;
+            FAIL;
         }
 
         position = newPosition;
@@ -263,5 +247,13 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
     free(distances);
     answer.roads = route;
     answer.count = 1;
+    return answer;
+
+    FAILURE:
+
+    free(distances);
+    free(blockedCities);
+    deleteHeap(heap, free);
+    deleteVector(route, NULL);
     return answer;
 }

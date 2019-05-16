@@ -52,7 +52,7 @@ bool addToHeap(Heap *heap, void *value);
  * Zwraca najmniejszą wartość i usuwa ją z kopca.
  * W wypadku kilku takich samych zwraca i usuwa jedną z nich.
  * @param[in,out] heap - wskaźnik na kopiec.
- * @return najmniejsze wartośc na kopcu lub @p NULL kiedy się nie da.
+ * @return najmniejsze wartość na kopcu lub @p NULL kiedy się nie da.
  */
 void *getMinimumFromHeap(Heap *heap);
 

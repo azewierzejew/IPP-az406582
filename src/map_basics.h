@@ -66,7 +66,7 @@ struct CityStruct {
     size_t id;
 };
 
-/** Przechowuje informacje o dordze krajowej. */
+/** Przechowuje informacje o drodze krajowej. */
 struct RouteStruct {
     /** Początek drogi. */
     City *end1;

@@ -12,7 +12,7 @@
 
 #include <stdbool.h>
 
-/** Struktura przechowująca słowink. */
+/** Struktura przechowująca słownik. */
 typedef struct DictStruct Dict;
 
 /**

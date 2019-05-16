@@ -38,7 +38,7 @@ struct BucketStruct {
     Bucket *left;
     /** Prawy kubełek-syn. */
     Bucket *right;
-    /** Wektor słow w kubełku (typu @ref EntryStruct *). */
+    /** Wektor słów w kubełku (typu @ref EntryStruct *). */
     Vector *entries;
 };
 
