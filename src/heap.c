@@ -72,7 +72,7 @@ void deleteHeap(Heap *heap, void valueDestructor(void *)) {
     free(heap);
 }
 
-bool isEmptyHeap(Heap *heap) {
+bool isEmptyHeap(const Heap *heap) {
     if (heap == NULL) {
         return true;
     }

@@ -67,6 +67,10 @@ static uint64_t hashWord(const char *word);
 
 static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *));
 
+static Bucket **findBucketPtr(Bucket **bucketPtr, uint64_t hash);
+
+static Bucket *findBucket(Bucket *bucket, uint64_t hash);
+
 
 /* Implementacja funkcji pomocniczych. */
 
@@ -143,20 +147,36 @@ static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *)) {
     free(bucket);
 }
 
-static Bucket **findBucket(Bucket **bucketPtr, uint64_t hash) {
+static Bucket **findBucketPtr(Bucket **bucketPtr, uint64_t hash) {
     if (*bucketPtr == NULL) {
         return bucketPtr;
     }
 
     if ((*bucketPtr)->hash < hash) {
-        return findBucket(&(*bucketPtr)->right, hash);
+        return findBucketPtr(&(*bucketPtr)->right, hash);
     }
 
     if ((*bucketPtr)->hash > hash) {
-        return findBucket(&(*bucketPtr)->left, hash);
+        return findBucketPtr(&(*bucketPtr)->left, hash);
     }
 
     return bucketPtr;
+}
+
+static Bucket *findBucket(Bucket *bucket, const uint64_t hash) {
+    if (bucket == NULL) {
+        return NULL;
+    }
+
+    if (bucket->hash < hash) {
+        return findBucket(bucket->right, hash);
+    }
+
+    if (bucket->hash > hash) {
+        return findBucket(bucket->left, hash);
+    }
+
+    return bucket;
 }
 
 
@@ -187,7 +207,7 @@ bool addToDict(Dict *dict, const char *word, void *value) {
     }
 
     uint64_t hash = hashWord(word);
-    Bucket **bucketPtr = findBucket(&dict->root, hash);
+    Bucket **bucketPtr = findBucketPtr(&dict->root, hash);
     if (*bucketPtr == NULL) {
         *bucketPtr = initBucket(hash);
         if (*bucketPtr == NULL) {
@@ -219,13 +239,13 @@ bool addToDict(Dict *dict, const char *word, void *value) {
     return true;
 }
 
-void *valueInDict(Dict *dict, const char *word) {
+void *valueInDict(const Dict *dict, const char *word) {
     if (dict == NULL || word == NULL) {
         return NULL;
     }
 
     uint64_t hash = hashWord(word);
-    Bucket *bucket = *findBucket(&dict->root, hash);
+    Bucket *bucket = findBucket(dict->root, hash);
     if (bucket == NULL) {
         return NULL;
     }

@@ -62,6 +62,6 @@ int compareDistances(Distance distance1, Distance distance2);
  * - @p 2, jeśli są co najmniej dwie drogi o tym samym dystansie,
  *   wtedy @ref RouteSearchAnswer.distance zawiera ten dystans.
  */
-RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoads);
+RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vector *usedRoads);
 
 #endif /* __DROGI_FIND_ROUTE_H__ */

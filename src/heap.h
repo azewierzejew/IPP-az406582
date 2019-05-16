@@ -37,7 +37,7 @@ void deleteHeap(Heap *heap, void valueDestructor(void *));
  * @param[in] heap - wskaźnik na kopiec.
  * @return @p true lub @p false w zależności od stanu kopca.
  */
-bool isEmptyHeap(Heap *heap);
+bool isEmptyHeap(const Heap *heap);
 
 /**
  * Dodaje nienullową wartość do kopca.

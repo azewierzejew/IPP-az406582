@@ -82,7 +82,7 @@ bool pushToVector(Vector *vector, void *value) {
     return true;
 }
 
-void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) {
+void popFromVector(Vector *vector, const void *value, void valueDestructor(void *)) {
     if (vector == NULL || value == NULL) {
         return;
     }
@@ -99,7 +99,7 @@ void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) {
     }
 }
 
-size_t sizeOfVector(Vector *vector) {
+size_t sizeOfVector(const Vector *vector) {
     if (vector == NULL) {
         return 0;
     }
@@ -107,7 +107,7 @@ size_t sizeOfVector(Vector *vector) {
     return vector->count;
 }
 
-bool isEmptyVector(Vector *vector) {
+bool isEmptyVector(const Vector *vector) {
     if (vector == NULL) {
         return true;
     }
@@ -116,7 +116,7 @@ bool isEmptyVector(Vector *vector) {
 }
 
 
-void **storageBlockOfVector(Vector *vector) {
+void **storageBlockOfVector(const Vector *vector) {
     if (vector == NULL) {
         return NULL;
     }
@@ -124,7 +124,7 @@ void **storageBlockOfVector(Vector *vector) {
     return vector->holder;
 }
 
-bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
+bool replaceValueWithVector(Vector *vector, const void *value, Vector *part) {
     if (!prepareForReplacingValueWithVector(vector, value, part)) {
         return false;
     }
@@ -160,7 +160,7 @@ bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
     return true;
 }
 
-bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *part) {
+bool prepareForReplacingValueWithVector(Vector *vector, const void *value, Vector *part) {
     if (vector == NULL || isEmptyVector(vector)) {
         return false;
     }
@@ -198,7 +198,7 @@ bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *par
     return true;
 }
 
-bool existsInVector(Vector *vector, void *value) {
+bool existsInVector(const Vector *vector, const void *value) {
     if (vector == NULL) {
         return false;
     }

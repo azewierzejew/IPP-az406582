@@ -135,6 +135,6 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2);
  * @param[in] routeId    – numer drogi krajowej.
  * @return Wskaźnik na napis lub NULL, gdy nie udało się zaalokować pamięci.
  */
-char const *getRouteDescription(Map *map, unsigned routeId);
+char const *getRouteDescription(const Map *map, unsigned routeId);
 
 #endif /* __DROGI_MAP_H__ */

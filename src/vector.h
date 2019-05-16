@@ -50,21 +50,21 @@ bool pushToVector(Vector *vector, void *value);
  * @param[in] value           - wartość do usunięcia;
  * @param[in] valueDestructor - funkcja do usuwania wartości.
  */
-void popFromVector(Vector *vector, void *value, void valueDestructor(void *));
+void popFromVector(Vector *vector, const void *value, void valueDestructor(void *));
 
 /**
  * Liczy rozmiar wektora.
  * @param[in] vector - wskaźnik na wektor.
  * @return Liczbę elementów na wektorze.
  */
-size_t sizeOfVector(Vector *vector);
+size_t sizeOfVector(const Vector *vector);
 
 /**
  * Sprawdza czy na wektorze znajdują się elementy.
  * @param[in] vector - wskaźnik na wektor.
  * @return @p true lub @p false w zależności od tego czy są elementy.
  */
-bool isEmptyVector(Vector *vector);
+bool isEmptyVector(const Vector *vector);
 
 /**
  * Zwraca wskaźnik na blok pamięci na którym trzymane są wartości wektora.
@@ -72,7 +72,7 @@ bool isEmptyVector(Vector *vector);
  * @param[in] vector - wskaźnik na wektor.
  * @return Wskaźnik na blok pamięci, lub @p NULL gdy blok nie istnieje.
  */
-void **storageBlockOfVector(Vector *vector);
+void **storageBlockOfVector(const Vector *vector);
 
 /**
  * @brief Na miejsce wartości podstawia zawartość @p part.
@@ -86,7 +86,7 @@ void **storageBlockOfVector(Vector *vector);
  * @return @p true jeśli się udało, @p false jeśli dane są niepoprawne lub
  * zabrakło pamięci.
  */
-bool replaceValueWithVector(Vector *vector, void *value, Vector *part);
+bool replaceValueWithVector(Vector *vector, const void *value, Vector *part);
 
 /**
  * Przygotowuje wektor na podmiankę wartości z użyciem @ref replaceValueWithVector.
@@ -97,7 +97,7 @@ bool replaceValueWithVector(Vector *vector, void *value, Vector *part);
  * @p true jeśli się udało, wtedy jest gwarancja, że jeśli wektory nie zostaną zmodyfikowane,
  *   to wywołanie @ref replaceValueWithVector z tymi argumentami się powiedzie.
  */
-bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *part);
+bool prepareForReplacingValueWithVector(Vector *vector, const void *value, Vector *part);
 
 /**
  * Sprawdza czy wartość zawiera się w wektorze.
@@ -105,7 +105,7 @@ bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *par
  * @param[in] value  - wartość do szukania.
  * @return @p true jeśli wartość się zawiera, @p false w p.p.
  */
-bool existsInVector(Vector *vector, void *value);
+bool existsInVector(const Vector *vector, const void *value);
 
 /**
  * @brief Na koniec jednego wektora wrzuca zawartość drugiego.

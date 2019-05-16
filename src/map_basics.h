@@ -83,6 +83,6 @@ struct RouteStruct {
  * @param[in] end
  * @return
  */
-City *otherRoadEnd(Road *road, City *end);
+City *otherRoadEnd(const Road *road, const City *end);
 
 #endif /* DROGI_MAP_BASICS_H */

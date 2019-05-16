@@ -1,7 +1,7 @@
 #include "map_basics.h"
 
 
-City *otherRoadEnd(Road *road, City *end) {
+City *otherRoadEnd(const Road *road, const City *end) {
     if (road == NULL) {
         return NULL;
     }

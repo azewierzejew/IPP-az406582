@@ -48,7 +48,7 @@ bool addToDict(Dict *dict, const char *word, void *value);
  * @param[in] word - wskaźnik na napis reprezentujący słowo.
  * @return znalezioną wartość, @p NULL jeśli nie ma słowa w słowniku.
  */
-void *valueInDict(Dict *dict, const char *word);
+void *valueInDict(const Dict *dict, const char *word);
 
 
 #endif /* __DROGI_DICT_H__ */

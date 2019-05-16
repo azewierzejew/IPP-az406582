@@ -46,17 +46,17 @@ static bool checkName(const char *name);
 
 static bool checkRouteId(unsigned routeId);
 
-static Road *findRoad(City *city1, City *city2);
+static Road *findRoad(const City *city1, const City *city2);
 
 static City *addCity(Map *map, const char *cityName);
 
-static void addNameToDescription(char **description, char *name);
+static void addNameToDescription(char **description, const char *name);
 
 static void addUnsignedToDescription(char **description, unsigned number);
 
 static void addIntToDescription(char **description, int number);
 
-static bool checkRouteOrientation(Route *route, City *city1, City *city2);
+static bool checkRouteOrientation(const Route *route, const City *city1, const City *city2);
 
 
 /* Implementacja funkcji pomocniczych. */
@@ -178,7 +178,7 @@ static bool checkRouteId(unsigned routeId) {
     return routeId > 0 && routeId <= MAX_ROUTE_ID;
 }
 
-static Road *findRoad(City *city1, City *city2) {
+static Road *findRoad(const City *city1, const City *city2) {
     if (city1 == NULL || city2 == NULL) {
         return NULL;
     }
@@ -189,7 +189,7 @@ static Road *findRoad(City *city1, City *city2) {
     {
         size_t len2 = sizeOfVector(city2->roads);
         if (len > len2) {
-            City *tmp = city1;
+            const City *tmp = city1;
             city1 = city2;
             city2 = tmp;
             len = len2;
@@ -221,7 +221,7 @@ static City *addCity(Map *map, const char *cityName) {
     return NULL;
 }
 
-static void addNameToDescription(char **description, char *name) {
+static void addNameToDescription(char **description, const char *name) {
     if (description == NULL || name == NULL) {
         return;
     }
@@ -242,12 +242,12 @@ static void addIntToDescription(char **description, int number) {
     *description += strlen(*description);
 }
 
-static bool checkRouteOrientation(Route *route, City *city1, City *city2) {
+static bool checkRouteOrientation(const Route *route, const City *city1, const City *city2) {
     if (route == NULL || city1 == city2) {
         return false;
     }
 
-    City *cityPair[2] = {city1, city2};
+    const City *cityPair[2] = {city1, city2};
     size_t correctCount = 0;
 
     size_t roadCount = sizeOfVector(route->roads);
@@ -388,7 +388,6 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
 
     *id = routeId;
     FAIL_IF(!pushToVector(map->doneRoutes, id));
-    id = NULL;
 
     map->routes[routeId] = route;
     return true;
@@ -398,7 +397,7 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
     deleteVector(roads, NULL);
     deleteRoute(route);
     if (map != NULL) {
-        popFromVector(map->doneRoutes, id, free);
+        popFromVector(map->doneRoutes, id, NULL);
     }
     free(id);
     return false;
@@ -561,7 +560,7 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     return false;
 }
 
-char const *getRouteDescription(Map *map, unsigned routeId) {
+char const *getRouteDescription(const Map *map, unsigned routeId) {
     char *description = NULL;
     FAIL_IF(map == NULL || !checkRouteId(routeId));
 
