@@ -22,8 +22,6 @@ struct VectorStruct {
 
 static inline bool resizeVector(Vector *vector, size_t len);
 
-static void doNothing(__attribute__((unused)) void *arg);
-
 /* Implementacja funkcji pomocniczych. */
 
 
@@ -38,7 +36,6 @@ static inline bool resizeVector(Vector *vector, size_t len) {
     return true;
 }
 
-static void doNothing(__attribute__((unused)) void *arg) {}
 
 /* Funkcje z interfejsu. */
 
@@ -61,15 +58,17 @@ void deleteVector(Vector *vector, void valueDestructor(void *)) {
         return;
     }
 
-    for (size_t i = 0; i < vector->count; i++) {
-        valueDestructor(vector->holder[i]);
+    if (valueDestructor != NULL) {
+        for (size_t i = 0; i < vector->count; i++) {
+            valueDestructor(vector->holder[i]);
+        }
     }
     free(vector->holder);
     free(vector);
 }
 
-bool pushToVector(Vector *vector, void *value) { // TODO nop on NULL
-    if (vector == NULL) {
+bool pushToVector(Vector *vector, void *value) {
+    if (vector == NULL || value == NULL) {
         return false;
     }
 
@@ -83,15 +82,17 @@ bool pushToVector(Vector *vector, void *value) { // TODO nop on NULL
     return true;
 }
 
-void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) { // TODO nop on NULL
-    if (vector == NULL) {
+void popFromVector(Vector *vector, void *value, void valueDestructor(void *)) {
+    if (vector == NULL || value == NULL) {
         return;
     }
 
     for (size_t i = vector->count; i > 0;) {
         i--;
         if (vector->holder[i] == value) {
-            valueDestructor(vector->holder[i]);
+            if (valueDestructor != NULL) {
+                valueDestructor(vector->holder[i]);
+            }
             vector->holder[i] = vector->holder[--vector->count];
             return;
         }
@@ -153,7 +154,7 @@ bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
 
     size_t totalCount = vector->count + part->count - 1;
     vector->count = totalCount;
-    deleteVector(part, doNothing);
+    deleteVector(part, NULL);
     return true;
 }
 
@@ -206,4 +207,30 @@ bool existsInVector(Vector *vector, void *value) {
     }
 
     return false;
+}
+
+bool appendVector(Vector *vector, Vector *part) {
+    if (vector == NULL || part == NULL) {
+        return false;
+    }
+
+    size_t elementCount = vector->count;
+    size_t totalCount = elementCount + part->count;
+    if (totalCount > vector->space) {
+        size_t newSize = totalCount;
+        if (newSize <= vector->space * 2) {
+            newSize = vector->space * 2 + 1;
+        }
+        if (!resizeVector(vector, newSize)) {
+            return false;
+        }
+    }
+
+    for (size_t i = 0; i < part->count; i++) {
+        vector->holder[elementCount + i] = part->holder[i];
+    }
+
+    vector->count = totalCount;
+    deleteVector(part, NULL);
+    return true;
 }

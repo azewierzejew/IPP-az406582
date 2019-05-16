@@ -518,14 +518,8 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
     } else {
         deleteVector(roads1, doNothing);
 
-        if (!pushToVector(route->roads, NULL)) { // TODO
-            deleteVector(roads2, doNothing);
-            return false;
-        }
-
-        if (!replaceValueWithVector(route->roads, NULL, roads2)) {
-            deleteVector(roads2, doNothing);
-            popFromVector(route->roads, NULL, doNothing);
+        if (!appendVector(route->roads, roads2)) {
+            deleteVector(roads2, NULL);
             return false;
         }
         route->end2 = city;

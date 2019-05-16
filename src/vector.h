@@ -23,13 +23,15 @@ Vector *initVector();
 /**
  * @brief Usuwa wektor.
  * Usuwa wektor, wywołując @p valueDestructor dla każdej wartości.
- * @param[in,out] vector  - wskaźnik na wektor;
+ * Jeśli wektor to @p NULL nic nie robi, jeśli funkcja to @p NULL nie używa jej.
+ * @param[in,out] vector      - wskaźnik na wektor;
  * @param[in] valueDestructor - funkcja do usuwania wartości z pamięci.
  */
 void deleteVector(Vector *vector, void valueDestructor(void *));
 
 /**
  * @brief Dodaje wartość na koniec wektora.
+ * Jeśli wektor lub wartość to @p NULL zwraca to nie dodaje.
  * @param[in,out] vector - wskaźnik na wektor;
  * @param[in] value      - wartość do dodania.
  * @return Wartość @p true jeśli się powiodło dodawanie, @p false w p.p.
@@ -39,7 +41,8 @@ bool pushToVector(Vector *vector, void *value);
 /**
  * @brief Usuwa wartość z wektora.
  * Usuwa z wektora daną wartość, przeglądając zawartość od tyłu.
- * Usuwa tylko pierwsze napotkane wystąpienie
+ * Usuwa tylko pierwsze napotkane wystąpienie wartości.
+ * Jeśli @p valueDestructor nie jest @p NULL wywołuje na usuwanej wartości.
  * @param[in,out] vector      - wskaźnik na wektor;
  * @param[in] value           - wartość do usunięcia;
  * @param[in] valueDestructor - funkcja do usuwania wartości.
@@ -62,7 +65,7 @@ bool isEmptyVector(Vector *vector);
 
 /**
  * Zwraca wskaźnik na blok pamięci na którym trzymane są wartości wektora.
- * Nie można usuwać tego bloku pamięci.
+ * Nie należy samodzielnie usuwać tego bloku pamięci.
  * @param[in] vector - wskaźnik na wektor.
  * @return Wskaźnik na blok pamięci, lub @p NULL gdy blok nie istnieje.
  */
@@ -70,13 +73,13 @@ void **storageBlockOfVector(Vector *vector);
 
 /**
  * @brief Na miejsce wartości podstawia zawartość @p part.
- * Znajdue w wektorze pierwsze od końca wystąpienie danej wartości.
+ * Znajduje w wektorze pierwsze od końca wystąpienie danej wartości.
  * Usuwa tą wartość, a w jej miejsce wstawia wszystkie elementy z @p part.
  * Następnie usuwa wektor @p part.
  * @param[in,out] vector - wskaźnik na wektor;
  * @param[in] value      - wartość wskazująca miejsce;
  * @param[in,out] part   - wskaźnik na wektor z elementami do dodania.
- * @return @p true jeśli się udało, @p false jeśli dane są niepoprawne
+ * @return @p true jeśli się udało, @p false jeśli dane są niepoprawne lub
  * zabrakło pamięci.
  */
 bool replaceValueWithVector(Vector *vector, void *value, Vector *part);
@@ -99,5 +102,16 @@ bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *par
  * @return @p true jeśli wartość się zawiera, @p false w p.p.
  */
 bool existsInVector(Vector *vector, void *value);
+
+/**
+ * @brief Na koniec jednego wektora wrzuca zawartość drugiego.
+ * Wszystkie elementy w @p part wrzuca do @p vector.
+ * Jeśli któreś jest @p NULL lub zabraknie pamięci
+ * to operacja kończy się niepowodzeniem.
+ * @param[in,out] vector - wektor do którego dodawane są elementy;
+ * @param[in,out] part   - wektor z którego bierzemy zawartość.
+ * @return @p false lub @p true w zależności czy operacja zakończyła się powodzeniem.
+ */
+bool appendVector(Vector *vector, Vector *part);
 
 #endif /*__DROGI_VECTOR_H__ */
