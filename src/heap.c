@@ -1,7 +1,6 @@
 #include "heap.h"
 #include "vector.h"
 #include "map_basics.h"
-#include "utility.h"
 
 #include <stdbool.h>
 
@@ -45,6 +44,10 @@ static int heapCompare(Heap *heap, void *element1, void *element2) {
 /* Funkcje z interfejsu. */
 
 Heap *initHeap(int comparator(void *, void *)) {
+    if (comparator == NULL) {
+        return false;
+    }
+
     Heap *heap = malloc(sizeof(Heap));
     if (heap == NULL) {
         return NULL;
@@ -104,12 +107,15 @@ void *getMinimumFromHeap(Heap *heap) {
         return NULL;
     }
     size_t elementCount = sizeOfVector(heap->elements);
+    if (elementCount == 0) {
+        return NULL;
+    }
 
     void **elements = storageBlockOfVector(heap->elements);
 
     void *minimum = elements[0];
     swap(elements, 0, elementCount - 1);
-    popFromVector(heap->elements, minimum, doNothing);
+    popFromVector(heap->elements, minimum, NULL);
     elementCount--;
 
     size_t position = 0;

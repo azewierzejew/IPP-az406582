@@ -12,7 +12,7 @@
 
 #include <stdbool.h>
 
-/** Struktura przechowująca słowink. */
+/** Struktura przechowująca słownik. */
 typedef struct DictStruct Dict;
 
 /**
@@ -25,7 +25,7 @@ Dict *initDict();
 /**
  * @brief Usuwa słownik.
  * Usuwa słownik wskazywany przez @p dict.
- * Na każdej wartości wywołuje .@p valueDestructor
+ * Na każdej wartości wywołuje @p valueDestructor, chyba że jest @p NULL.
  * @param[in,out] dict        - wskaźnik na słownik;
  * @param[in] valueDestructor - funkcja do usuwania wartości z pamięci.
  */
@@ -33,7 +33,7 @@ void deleteDict(Dict *dict, void valueDestructor(void *));
 
 /**
  * @brief Dodaje do słownika słowo.
- * Dla danego słowa, przypisuje mu w słowniku niezerową wartość.
+ * Dla danego słowa, przypisuje mu w słowniku nienullową wartość.
  * @param[in,out] dict - wskaźnik na słownik;
  * @param[in] word     - wskaźnik na napis reprezentujący słowo;
  * @param[in] value    - wartość do przypisania

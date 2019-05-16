@@ -25,7 +25,8 @@ Heap *initHeap(int comparator(void *, void *));
 
 /**
  * @brief Usuwa kopiec.
- * Usuwa kopiec,wywołując @p valueDestructor dla każdej wartości na kopcu.
+ * Usuwa kopiec,wywołując @p valueDestructor dla każdej wartości na kopcu,
+ * chyba że jest @p NULL, wtedy nie wywołuje.
  * @param[in,out] heap        - wskaźnik na kopiec;
  * @param[in] valueDestructor - funkcja do usuwania wartości.
  */
@@ -39,7 +40,7 @@ void deleteHeap(Heap *heap, void valueDestructor(void *));
 bool isEmptyHeap(Heap *heap);
 
 /**
- * Dodaje niezerową wartość do kopca.
+ * Dodaje nienullową wartość do kopca.
  * @param[in,out] heap - wskaźnik na kopiec.
  * @param[in] value    - wartość.
  * @return @p true lub @p false w zależności od tego czy dodawanie się powiodło.
@@ -49,9 +50,9 @@ bool addToHeap(Heap *heap, void *value);
 /**
  * @brief Zwraca najmniejszą wartość na kopcu.
  * Zwraca najmniejszą wartość i usuwa ją z kopca.
- * W wypadku kilku takich samych zwraca jedną z nich.
+ * W wypadku kilku takich samych zwraca i usuwa jedną z nich.
  * @param[in,out] heap - wskaźnik na kopiec.
- * @return
+ * @return najmniejsze wartość na kopcu lub @p NULL kiedy się nie da.
  */
 void *getMinimumFromHeap(Heap *heap);
 

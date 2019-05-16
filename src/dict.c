@@ -38,7 +38,7 @@ struct BucketStruct {
     Bucket *left;
     /** Prawy kubełek-syn. */
     Bucket *right;
-    /** Wektor słow w kubełku (typu @ref EntryStruct *). */
+    /** Wektor słów w kubełku (typu @ref EntryStruct *). */
     Vector *entries;
 };
 
@@ -134,7 +134,9 @@ static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *)) {
     Entry **entries = (Entry **) storageBlockOfVector(bucket->entries);
     for (size_t i = 0; i < entryCount; i++) {
         free(entries[i]->word);
-        valueDestructor(entries[i]->value);
+        if (valueDestructor != NULL) {
+            valueDestructor(entries[i]->value);
+        }
     }
     deleteVector(bucket->entries, free);
 
@@ -156,6 +158,7 @@ static Bucket **findBucket(Bucket **bucketPtr, uint64_t hash) {
 
     return bucketPtr;
 }
+
 
 /* Funkcje z interfejsu. */
 
