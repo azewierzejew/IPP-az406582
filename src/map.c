@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "map.h"
 #include "vector.h"
 #include "dict.h"
@@ -57,27 +59,23 @@ static bool checkRouteOrientation(Route *route, City *city1, City *city2);
 
 static City *initCity(const char *name, size_t id) {
     City *city = malloc(sizeof(City));
-    if (city == NULL) {
-        return NULL;
-    }
+    FAIL_IF(city == NULL);
 
-    city->name = malloc(sizeof(char) * (strlen(name) + 1));
-    if (city->name == NULL) {
-        free(city);
-        return NULL;
-    }
-
-    strcpy(city->name, name);
+    city->name = strdup(name);
     city->roads = initVector();
-
-    if (city->roads == NULL) {
-        free(city->name);
-        free(city);
-        return NULL;
-    }
-
     city->id = id;
+
+    FAIL_IF(city->name == NULL || city->roads == NULL);
+
     return city;
+
+    FAILURE:
+
+    if (city != NULL) {
+        free(city->name);
+    }
+    free(city);
+    return NULL;
 }
 
 static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2) {
@@ -137,12 +135,12 @@ static void deleteRoute(void *routeVoid) {
         return;
     }
 
-    deleteVector(route->roads, doNothing);
+    deleteVector(route->roads, NULL);
     free(route);
 }
 
 static bool correctChar(char a) {
-    return !(a >= 0 && a <= 31) && a != ';';
+    return !(0 <= a && a <= 31) && a != ';';
 }
 
 static bool checkName(const char *name) {
@@ -192,22 +190,18 @@ static Road *findRoad(City *city1, City *city2) {
 }
 
 static City *addCity(Map *map, const char *cityName) {
-    if (map == NULL) {
-        return NULL;
-    }
+    City *city = NULL;
+    FAIL_IF(map == NULL);
 
-    City *city = initCity(cityName, map->cityCount);
-    if (city == NULL) {
-        return NULL;
-    }
-
-    if (!addToDict(map->cities, cityName, city)) {
-        deleteCity(city);
-        return NULL;
-    }
-
+    city = initCity(cityName, map->cityCount);
+    FAIL_IF(city == NULL || !addToDict(map->cities, cityName, city));
     map->cityCount++;
     return city;
+
+    FAILURE:
+
+    deleteCity(city);
+    return NULL;
 }
 
 static void addNameToDescription(char **description, char *name) {
@@ -232,11 +226,7 @@ static void addIntToDescription(char **description, int number) {
 }
 
 static bool checkRouteOrientation(Route *route, City *city1, City *city2) {
-    if (route == NULL) {
-        return false;
-    }
-
-    if (city1 == city2) {
+    if (route == NULL || city1 == city2) {
         return false;
     }
 
@@ -256,11 +246,8 @@ static bool checkRouteOrientation(Route *route, City *city1, City *city2) {
         }
         position = otherRoadEnd(roads[i], position);
     }
-    if (position == cityPair[correctCount]) {
-        correctCount++;
-        if (correctCount == 2) {
-            return true;
-        }
+    if (position == cityPair[1]) {
+        return true;
     }
 
     return false;
