@@ -144,22 +144,24 @@ bool replaceValueWithVector(Vector *vector, void *value, Vector *part) {
     }
     index--;
 
+    size_t addedCount = sizeOfVector(part);
     for (size_t i = vector->count - 1; i > index; i--) {
-        vector->holder[i - 1 + part->count] = vector->holder[i];
+        vector->holder[i - 1 + addedCount] = vector->holder[i];
     }
 
-    for (size_t i = 0; i < part->count; i++) {
+    for (size_t i = 0; i < addedCount; i++) {
+        /* Jeżeli [part == NULL] albo [part->holder == NULL] to tu nie wejdziemy. */
         vector->holder[index + i] = part->holder[i];
     }
 
-    size_t totalCount = vector->count + part->count - 1;
+    size_t totalCount = vector->count + addedCount - 1;
     vector->count = totalCount;
     deleteVector(part, NULL);
     return true;
 }
 
 bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *part) {
-    if (vector == NULL || part == NULL || isEmptyVector(vector)) {
+    if (vector == NULL || isEmptyVector(vector)) {
         return false;
     }
 
@@ -181,7 +183,8 @@ bool prepareForReplacingValueWithVector(Vector *vector, void *value, Vector *par
         return true;
     }
 
-    size_t totalCount = vector->count + part->count - 1;
+    size_t addedCount = sizeOfVector(part);
+    size_t totalCount = vector->count + addedCount - 1;
     if (totalCount > vector->space) {
         size_t newSize = totalCount;
         if (newSize <= vector->space * 2) {
@@ -215,7 +218,8 @@ bool appendVector(Vector *vector, Vector *part) {
     }
 
     size_t elementCount = vector->count;
-    size_t totalCount = elementCount + part->count;
+    size_t addedCount = sizeOfVector(part);
+    size_t totalCount = elementCount + addedCount;
     if (totalCount > vector->space) {
         size_t newSize = totalCount;
         if (newSize <= vector->space * 2) {
@@ -226,7 +230,8 @@ bool appendVector(Vector *vector, Vector *part) {
         }
     }
 
-    for (size_t i = 0; i < part->count; i++) {
+    for (size_t i = 0; i < addedCount; i++) {
+        /* Jeśli [part == NULL] lub [part->holder == NULL] to tu nie wejdziemy. */
         vector->holder[elementCount + i] = part->holder[i];
     }
 

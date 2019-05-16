@@ -42,6 +42,9 @@ bool pushToVector(Vector *vector, void *value);
  * @brief Usuwa wartość z wektora.
  * Usuwa z wektora daną wartość, przeglądając zawartość od tyłu.
  * Usuwa tylko pierwsze napotkane wystąpienie wartości.
+ * Na jej miejsce wstawia ostatnią wartość z wektora.
+ * Żeby nie zmieniać kolejności należy użyć @ref replaceValueWithVector
+ * z @p part równym NULL.
  * Jeśli @p valueDestructor nie jest @p NULL wywołuje na usuwanej wartości.
  * @param[in,out] vector      - wskaźnik na wektor;
  * @param[in] value           - wartość do usunięcia;
@@ -75,6 +78,7 @@ void **storageBlockOfVector(Vector *vector);
  * @brief Na miejsce wartości podstawia zawartość @p part.
  * Znajduje w wektorze pierwsze od końca wystąpienie danej wartości.
  * Usuwa tą wartość, a w jej miejsce wstawia wszystkie elementy z @p part.
+ * Jeśli @p part to działa tak samo jakby @p part było pustym wektorem.
  * Następnie usuwa wektor @p part.
  * @param[in,out] vector - wskaźnik na wektor;
  * @param[in] value      - wartość wskazująca miejsce;
@@ -106,8 +110,9 @@ bool existsInVector(Vector *vector, void *value);
 /**
  * @brief Na koniec jednego wektora wrzuca zawartość drugiego.
  * Wszystkie elementy w @p part wrzuca do @p vector.
- * Jeśli któreś jest @p NULL lub zabraknie pamięci
+ * Jeśli wektor to @p NULL lub zabraknie pamięci
  * to operacja kończy się niepowodzeniem.
+ * Jeśli part to @p NULL nic nie robi.
  * @param[in,out] vector - wektor do którego dodawane są elementy;
  * @param[in,out] part   - wektor z którego bierzemy zawartość.
  * @return @p false lub @p true w zależności czy operacja zakończyła się powodzeniem.
