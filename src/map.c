@@ -34,6 +34,8 @@ static Route *initRoute(Vector *roads, City *end1, City *end2);
 
 static void deleteRoad(void *roadVoid);
 
+static void deleteRoadHalfway(void *roadVoid);
+
 static void deleteCity(void *cityVoid);
 
 static void deleteRoute(void *routeVoid);
@@ -111,10 +113,19 @@ static void deleteRoad(void *roadVoid) {
         return;
     }
 
+    free(road);
+}
+
+static void deleteRoadHalfway(void *roadVoid) {
+    Road *road = roadVoid;
+    if (road == NULL) {
+        return;
+    }
+
     /* Droga musi być usunięta z obu końców i nie ma roku 0,
      * więc rok naprawy 0 oznacza połowiczne usunięcie. */
     if (road->lastRepaired == 0) {
-        free(road);
+        deleteRoad(road);
     } else {
         road->lastRepaired = 0;
     }
@@ -127,7 +138,7 @@ static void deleteCity(void *cityVoid) {
     }
 
     free(city->name);
-    deleteVector(city->roads, deleteRoad);
+    deleteVector(city->roads, deleteRoadHalfway);
     free(city);
 }
 
@@ -552,7 +563,6 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
 
 char const *getRouteDescription(Map *map, unsigned routeId) {
     char *description = NULL;
-    if (!checkRouteId(routeId)) return calloc(1, 1); // TODO tempoprary
     FAIL_IF(map == NULL || !checkRouteId(routeId));
 
     if (map->routes[routeId] == NULL) {
