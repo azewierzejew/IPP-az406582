@@ -16,10 +16,4 @@
  */
 #define FAIL_IF(x) do { if (x) goto FAILURE; } while (0)
 
-/**
- * Przyjmuje argument i nic nie robi, wykorzystywane przy usuwaniu struktur.
- * @param arg - argument
- */
-void doNothing(void *arg);
-
 #endif /* __DROGI_UTILITY_H__ */

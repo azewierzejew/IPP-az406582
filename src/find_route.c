@@ -240,7 +240,7 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
                 /* Jeśli [newPosition != NULL] to są dwie możliwe drogi. */
                 if (newPosition != NULL || !pushToVector(route, road)) {
                     free(distances);
-                    deleteVector(route, doNothing);
+                    deleteVector(route, NULL);
                     answer.count = 2;
                     return answer;
                 }
@@ -251,7 +251,7 @@ RouteSearchAnswer findRoute(Map *map, City *city1, City *city2, Vector *usedRoad
 
         if (newPosition == NULL) {
             free(distances);
-            deleteVector(route, doNothing);
+            deleteVector(route, NULL);
             answer.count = 0;
             return answer;
         }

@@ -384,7 +384,7 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
 
     FAILURE:
 
-    deleteVector(roads, doNothing);
+    deleteVector(roads, NULL);
     deleteRoute(route);
     if (map != NULL) {
         popFromVector(map->doneRoutes, id, free);
