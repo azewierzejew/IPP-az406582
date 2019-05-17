@@ -193,12 +193,10 @@ static bool createCustomRoute(unsigned routeId, const char **parameters, size_t 
     cityNames[roadCount] = parameters[roadCount * 3];
 
     for (size_t i = 0; i < roadCount; i++) {
-        if (!addRoad(map, cityNames[i], cityNames[i + 1], roadLengths[i], roadYears[i])) {
-            newRoute(0, routeId, 0, 0);
-            extendRoute(0, 0, 0);
-            removeRoad(0, 0, 0);
-        }
+        FAIL_IF(!setupRoad(map, cityNames[i], cityNames[i + 1], roadLengths[i], roadYears[i]));
     }
+
+    FAIL_IF(!createRoute(map, routeId, cityNames, roadCount + 1));
 
     free(roadYears);
     free(roadLengths);

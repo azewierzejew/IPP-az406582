@@ -362,6 +362,33 @@ bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repa
     return false;
 }
 
+bool setupRoad(Map *map, const char *cityName1, const char *cityName2,
+               unsigned length, int repairYear) {
+    /* Jeśli da się dodać to dodajemy. */
+    if (addRoad(map, cityName1, cityName2, length, repairYear)) {
+        return true;
+    }
+
+    /* Sprawdzamy TYLKO długość drogi. */
+    City *city1 = NULL;
+    City *city2 = NULL;
+    Road *road = NULL;
+
+    FAIL_IF(map == NULL);
+
+    city1 = valueInDict(map->cities, cityName1);
+    city2 = valueInDict(map->cities, cityName2);
+    road = findRoad(city1, city2);
+
+    FAIL_IF(road == NULL || road->length != length);
+
+    return repairRoad(map, cityName1, cityName2, repairYear);
+
+    FAILURE:
+
+    return false;
+}
+
 bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cityName2) {
     City *city1 = NULL;
     City *city2 = NULL;
@@ -400,6 +427,52 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
         popFromVector(map->doneRoutes, id, NULL);
     }
     free(id);
+    return false;
+}
+
+bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t cityCount) {
+    Vector *roads = NULL;
+    City *firstCity = NULL;
+    City *lastCity = NULL;
+    Route *route = NULL;
+    unsigned *id = NULL;
+
+    FAIL_IF(map == NULL || !checkRouteId(routeId) || map->routes[routeId] || cityCount < 2);
+    FAIL_IF(cityNames == NULL || !checkName(cityNames[0]));
+
+    roads = initVector();
+    FAIL_IF(roads == NULL);
+
+    firstCity = valueInDict(map->cities, cityNames[0]);
+    /* Nie ma sprawdzenia czy miasta są NULL bo wystarczy drogę. */
+    lastCity = firstCity;
+    for (size_t i = 0; i < cityCount - 1; i++) {
+        FAIL_IF(checkName(cityNames[i + 1]));
+        City *nextCity = valueInDict(map->cities, cityNames[i + 1]);
+        Road *road = findRoad(lastCity, nextCity);
+        FAIL_IF(road == NULL || pushToVector(roads, road));
+        lastCity = nextCity;
+    }
+
+    /* Po wykonaniu całej pętli w lastCity jest ostatnie miasto na drodze. */
+    route = initRoute(roads, firstCity, lastCity);
+    FAIL_IF(route == NULL);
+
+    id = malloc(sizeof(unsigned));
+    FAIL_IF(id == NULL);
+    *id = routeId;
+    FAIL_IF(pushToVector(map->doneRoutes, id));
+
+    return true;
+
+    FAILURE:
+
+    if (map != NULL) {
+        popFromVector(map->doneRoutes, id, NULL);
+    }
+    free(id);
+    deleteRoute(route);
+    deleteVector(roads, NULL);
     return false;
 }
 

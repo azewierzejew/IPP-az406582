@@ -10,6 +10,7 @@
 #define __DROGI_MAP_H__
 
 #include <stdbool.h>
+#include <stdlib.h>
 
 /**
  * Struktura przechowująca mapę dróg krajowych.
@@ -62,6 +63,9 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
  */
 bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repairYear);
 
+bool setupRoad(Map *map, const char *cityName1, const char *cityName2,
+               unsigned length, int repairYear);
+
 /** @brief Łączy dwa różne miasta drogą krajową.
  * Tworzy drogę krajową pomiędzy dwoma miastami i nadaje jej podany numer.
  * Wśród istniejących odcinków dróg wyszukuje najkrótszą drogę. Jeśli jest
@@ -79,8 +83,9 @@ bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repa
  * jednoznacznie wyznaczyć drogi krajowej między podanymi miastami lub nie udało
  * się zaalokować pamięci.
  */
-bool newRoute(Map *map, unsigned routeId,
-              const char *cityName1, const char *cityName2);
+bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cityName2);
+
+bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t cityCount);
 
 /** @brief Wydłuża drogę krajową do podanego miasta.
  * Dodaje do drogi krajowej nowe odcinki dróg do podanego miasta w taki sposób,
