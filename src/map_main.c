@@ -1,3 +1,10 @@
+/** @file
+ * Program pozwalający wykonywać na pewne komendy na jednej mapie dróg.
+ *
+ * @author Antoni Żewierżejew <azewierzejew@gmail.com>
+ * @date 18.05.2019
+ */
+
 #define _GNU_SOURCE
 
 #include "map.h"
@@ -13,17 +20,68 @@
 #include <limits.h>
 #include <ctype.h>
 
+/**
+ * Wskaźnik na strukturę mapy, na której wykonywane są operacje.
+ */
 static Map *map = NULL;
 
+/**
+ * @brief Ekstrahuje kolejne parametry z komendy.
+ * Dla napisu będącego komendą wyciąga kolejne napisy pomiędzy średnikami.
+ * Jeśli parametr @p string to z napisu, na którym ostatnio było operowane, zwraca kolejny parametr.
+ * Jeśli nie to zaczyna nową parsowanie danego napisu.
+ * Zamienia średniki na zerowe bajty i zwraca wskaźniki na kolejne pozycje w oryginalnym napisie.
+ * @param[in,out] string - napis to ekstrahowania parametrów.
+ * @return wskaźnik na odpowiednią pozycję w oryginalnym napisie lub @p NULL jeśli się skończył.
+ */
 static char *getNextParameter(char *string);
 
+/**
+ * @brief Konwertuje napis na @p unsigned.
+ * Parsuje dany napis i jego wartość zapisuje pod podanym wskaźnikiem.
+ * Napis powinien być kodowany w bazie 8, 10 lub 16.
+ * Dowolne nadmiarowe znaki są uznawane za błąd.
+ * @param[in] str     - napis do skonwertowania;
+ * @param[out] number - wskaźnik do zapisania wartości
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
 static bool stringToUnsigned(const char *str, unsigned *number);
 
+/**
+ * @brief Konwertuje napis na @p int.
+ * Parsuje dany napis i jego wartość zapisuje pod podanym wskaźnikiem.
+ * Napis powinien być kodowany w bazie 8, 10 lub 16.
+ * Dowolne nadmiarowe znaki są uznawane za błąd.
+ * @param[in] str     - napis do skonwertowania;
+ * @param[out] number - wskaźnik do zapisania wartości
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
 static bool stringToInt(const char *str, int *number);
 
+/**
+ * @brief Wykonuje komendę na mapie dróg.
+ * Dla danego napisu zawierającego linię z komendą i jej długości wykonuje odpowiedną komendę.
+ * Nie usuwa napisu, ale może go modyfikować.
+ * @param[in,out] command - napis zawierający linię;
+ * @param[in] len         - długość linii.
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
 static bool executeCommand(char *command, size_t len);
 
+/**
+ * @brief Wykonuje komendę skonstruowania konkretnej drogi.
+ * Dla danego ID drogi, tablicy parametrów komendy i ilości parametrów
+ * wykonuje operację stworzenia drogi.
+ * Tworzy na mapie drogę krajową o podanym opisie.
+ * Tworzy lub naprawia odpowiednie odcinki drogowe.
+ * Może je modyfikować nawet w przypadku nieudanego stworzenia drogi krajowej.
+ * @param[in] routeId        - ID dodawanej drogi;
+ * @param[in] parameters     - tablica parametrów;
+ * @param[in] parameterCount - liczba parametrów.
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
 static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t parameterCount);
+
 
 static char *getNextParameter(char *string) {
     static char *savePointer = NULL;
@@ -176,8 +234,6 @@ static bool executeCommand(char *command, size_t len) {
     return false;
 }
 
-int doneRoutes[1000]; // todo
-
 static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t parameterCount) {
     const char **cityNames = NULL;
     unsigned *roadLengths = NULL;
@@ -185,8 +241,6 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
     RoadStatus *roadStatuses = NULL;
     size_t roadCount = parameterCount / 3;
     FAIL_IF(roadCount < 1 || roadCount * 3 + 1 != parameterCount);
-    FAIL_IF(routeId == 0 || routeId >= 1000); //todo
-    FAIL_IF(doneRoutes[routeId]);
 
     cityNames = malloc(sizeof(const char *) * (roadCount + 1));
     roadLengths = malloc(sizeof(int) * roadCount);
@@ -200,14 +254,6 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
         FAIL_IF(!stringToInt(parameters[nr++], &roadYears[i]));
     }
     cityNames[roadCount] = parameters[roadCount * 3];
-
-    { // TODO usun
-        for (size_t i = 0; i < roadCount + 1; i++) {
-            for (size_t j = 0; j < i; j++) {
-                FAIL_IF(strcmp(cityNames[i], cityNames[j]) == 0);
-            }
-        }
-    }
 
     roadStatuses = malloc(sizeof(RoadStatus) * roadCount);
     FAIL_IF(roadStatuses == NULL);
@@ -233,7 +279,6 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
 
     FAIL_IF(!createRoute(map, routeId, cityNames, roadCount + 1));
 
-    doneRoutes[routeId] = 1; // todo
     free(roadStatuses);
     free(roadYears);
     free(roadLengths);
@@ -249,6 +294,10 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
     return false;
 }
 
+/**
+ * Funkcja main programu.
+ * @return kod wyjścia.
+ */
 int main() {
     map = newMap();
     if (map == NULL) {
