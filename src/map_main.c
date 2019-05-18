@@ -1,3 +1,10 @@
+/** @file
+ * Program pozwalający wykonywać na pewne komendy na jednej mapie dróg.
+ *
+ * @author Antoni Żewierżejew <azewierzejew@gmail.com>
+ * @date 18.05.2019
+ */
+
 #define _GNU_SOURCE
 
 #include "map.h"
@@ -13,17 +20,68 @@
 #include <limits.h>
 #include <ctype.h>
 
+/**
+ * Wskaźnik na strukturę mapy, na której wykonywane są operacje.
+ */
 static Map *map = NULL;
 
+/**
+ * @brief Ekstrahuje kolejne parametry z komendy.
+ * Dla napisu będącego komendą wyciąga kolejne napisy pomiędzy średnikami.
+ * Jeśli parametr @p string to z napisu, na którym ostatnio było operowane, zwraca kolejny parametr.
+ * Jeśli nie to zaczyna nową parsowanie danego napisu.
+ * Zamienia średniki na zerowe bajty i zwraca wskaźniki na kolejne pozycje w oryginalnym napisie.
+ * @param[in,out] string - napis to ekstrahowania parametrów.
+ * @return wskaźnik na odpowiednią pozycję w oryginalnym napisie lub @p NULL jeśli się skończył.
+ */
 static char *getNextParameter(char *string);
 
+/**
+ * @brief Konwertuje napis na @p unsigned.
+ * Parsuje dany napis i jego wartość zapisuje pod podanym wskaźnikiem.
+ * Napis powinien być kodowany w bazie 8, 10 lub 16.
+ * Dowolne nadmiarowe znaki są uznawane za błąd.
+ * @param[in] str     - napis do skonwertowania;
+ * @param[out] number - wskaźnik do zapisania wartości
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
 static bool stringToUnsigned(const char *str, unsigned *number);
 
+/**
+ * @brief Konwertuje napis na @p int.
+ * Parsuje dany napis i jego wartość zapisuje pod podanym wskaźnikiem.
+ * Napis powinien być kodowany w bazie 8, 10 lub 16.
+ * Dowolne nadmiarowe znaki są uznawane za błąd.
+ * @param[in] str     - napis do skonwertowania;
+ * @param[out] number - wskaźnik do zapisania wartości
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
 static bool stringToInt(const char *str, int *number);
 
+/**
+ * @brief Wykonuje komendę na mapie dróg.
+ * Dla danego napisu zawierającego linię z komendą i jej długości wykonuje odpowiednią komendę.
+ * Nie usuwa napisu, ale może go modyfikować.
+ * @param[in,out] command - napis zawierający linię;
+ * @param[in] len         - długość linii.
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
 static bool executeCommand(char *command, size_t len);
 
-static bool createCustomRoute(unsigned routeId, const char **parameters, size_t parameterCount);
+/**
+ * @brief Wykonuje komendę skonstruowania konkretnej drogi.
+ * Dla danego ID drogi, tablicy parametrów komendy i ilości parametrów
+ * wykonuje operację stworzenia drogi.
+ * Tworzy na mapie drogę krajową o podanym opisie.
+ * Tworzy lub naprawia odpowiednie odcinki drogowe.
+ * Może je modyfikować nawet w przypadku nieudanego stworzenia drogi krajowej.
+ * @param[in] routeId        - ID dodawanej drogi;
+ * @param[in] parameters     - tablica parametrów;
+ * @param[in] parameterCount - liczba parametrów.
+ * @return @p true lub @p false w zależności od powodzenia.
+ */
+static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t parameterCount);
+
 
 static char *getNextParameter(char *string) {
     static char *savePointer = NULL;
@@ -121,6 +179,7 @@ static bool executeCommand(char *command, size_t len) {
     size_t parameterCount = sizeOfVector(parametersVector);
     const char **parameters = (const char **) storageBlockOfVector(parametersVector);
     if (parameterCount == 0) {
+        deleteVector(parametersVector, NULL);
         return true;
     }
 
@@ -153,18 +212,21 @@ static bool executeCommand(char *command, size_t len) {
         FAIL_IF(!stringToUnsigned(parameters[1], &routeId));
 
         deleteVector(parametersVector, NULL);
-        const char *description = getRouteDescription(map, routeId);
+        char *description = (char *) getRouteDescription(map, routeId);
         if (description == NULL) {
             return false;
         }
 
         printf("%s\n", description);
+        free(description);
         return true;
     }
 
     unsigned routeId;
     FAIL_IF(!stringToUnsigned(parameters[0], &routeId));
-    return createCustomRoute(routeId, parameters + 1, parameterCount - 1);
+    bool result = executeCreateRoute(routeId, parameters + 1, parameterCount - 1);
+    deleteVector(parametersVector, NULL);
+    return result;
 
     FAILURE:
 
@@ -172,10 +234,11 @@ static bool executeCommand(char *command, size_t len) {
     return false;
 }
 
-static bool createCustomRoute(unsigned routeId, const char **parameters, size_t parameterCount) {
+static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t parameterCount) {
     const char **cityNames = NULL;
-    int *roadLengths = NULL;
-    unsigned *roadYears = NULL;
+    unsigned *roadLengths = NULL;
+    int *roadYears = NULL;
+    RoadStatus *roadStatuses = NULL;
     size_t roadCount = parameterCount / 3;
     FAIL_IF(roadCount < 1 || roadCount * 3 + 1 != parameterCount);
 
@@ -187,17 +250,36 @@ static bool createCustomRoute(unsigned routeId, const char **parameters, size_t 
     for (size_t i = 0; i < roadCount; i++) {
         size_t nr = i * 3;
         cityNames[i] = parameters[nr++];
-        FAIL_IF(!stringToInt(parameters[nr++], &roadLengths[i]));
-        FAIL_IF(!stringToUnsigned(parameters[nr++], &roadYears[i]));
+        FAIL_IF(!stringToUnsigned(parameters[nr++], &roadLengths[i]));
+        FAIL_IF(!stringToInt(parameters[nr++], &roadYears[i]));
     }
     cityNames[roadCount] = parameters[roadCount * 3];
 
+    roadStatuses = malloc(sizeof(RoadStatus) * roadCount);
+    FAIL_IF(roadStatuses == NULL);
     for (size_t i = 0; i < roadCount; i++) {
-        FAIL_IF(!setupRoad(map, cityNames[i], cityNames[i + 1], roadLengths[i], roadYears[i]));
+        roadStatuses[i] = getRoadStatus(map, cityNames[i], cityNames[i + 1],
+                                        roadLengths[i], roadYears[i]);
+        FAIL_IF(roadStatuses[i] == ROAD_ILLEGAL);
+    }
+
+    for (size_t i = 0; i < roadCount; i++) {
+        switch (roadStatuses[i]) {
+            case ROAD_REPAIRABLE:
+                FAIL_IF(!repairRoad(map, cityNames[i], cityNames[i + 1], roadYears[i]));
+                break;
+            case ROAD_ADDABLE:
+                FAIL_IF(!addRoad(map, cityNames[i], cityNames[i + 1],
+                                 roadLengths[i], roadYears[i]));
+                break;
+            default:
+                break;
+        }
     }
 
     FAIL_IF(!createRoute(map, routeId, cityNames, roadCount + 1));
 
+    free(roadStatuses);
     free(roadYears);
     free(roadLengths);
     free(cityNames);
@@ -205,12 +287,17 @@ static bool createCustomRoute(unsigned routeId, const char **parameters, size_t 
 
     FAILURE:
 
+    free(roadStatuses);
     free(roadYears);
     free(roadLengths);
     free(cityNames);
     return false;
 }
 
+/**
+ * Funkcja main programu.
+ * @return kod wyjścia.
+ */
 int main() {
     map = newMap();
     if (map == NULL) {
