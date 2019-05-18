@@ -60,7 +60,7 @@ static bool stringToInt(const char *str, int *number);
 
 /**
  * @brief Wykonuje komendę na mapie dróg.
- * Dla danego napisu zawierającego linię z komendą i jej długości wykonuje odpowiedną komendę.
+ * Dla danego napisu zawierającego linię z komendą i jej długości wykonuje odpowiednią komendę.
  * Nie usuwa napisu, ale może go modyfikować.
  * @param[in,out] command - napis zawierający linię;
  * @param[in] len         - długość linii.
