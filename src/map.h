@@ -12,10 +12,20 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+enum RoadStatusEnum {
+    ROAD_ILLEGAL,
+    ROAD_ADDABLE,
+    ROAD_REPAIRABLE,
+    ROAD_EXACT
+};
+
 /**
  * Struktura przechowująca mapę dróg krajowych.
  */
 typedef struct Map Map;
+
+typedef enum RoadStatusEnum RoadStatus;
+
 
 /** @brief Tworzy nową strukturę.
  * Tworzy nową, pustą strukturę niezawierającą żadnych miast, odcinków dróg ani
@@ -63,8 +73,8 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
  */
 bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repairYear);
 
-bool setupRoad(Map *map, const char *cityName1, const char *cityName2,
-               unsigned length, int repairYear);
+RoadStatus getRoadStatus(Map *map, const char *cityName1, const char *cityName2,
+                         unsigned length, int repairYear);
 
 /** @brief Łączy dwa różne miasta drogą krajową.
  * Tworzy drogę krajową pomiędzy dwoma miastami i nadaje jej podany numer.
@@ -140,6 +150,6 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2);
  * @param[in] routeId    – numer drogi krajowej.
  * @return Wskaźnik na napis lub NULL, gdy nie udało się zaalokować pamięci.
  */
-char const *getRouteDescription(const Map *map, unsigned routeId);
+char const *getRouteDescription(Map *map, unsigned routeId);
 
 #endif /* __DROGI_MAP_H__ */

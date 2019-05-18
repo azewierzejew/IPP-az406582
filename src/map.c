@@ -46,6 +46,10 @@ static bool checkName(const char *name);
 
 static bool checkRouteId(unsigned routeId);
 
+static int compareSize_t(const void *aPtr, const void *bPtr);
+
+static bool checkForDuplicateIds(size_t *ids, size_t idCount);
+
 static Road *findRoad(const City *city1, const City *city2);
 
 static City *addCity(Map *map, const char *cityName);
@@ -176,6 +180,49 @@ static bool checkName(const char *name) {
 
 static bool checkRouteId(unsigned routeId) {
     return routeId > 0 && routeId <= MAX_ROUTE_ID;
+}
+
+static int compareSize_t(const void *aPtr, const void *bPtr) {
+    if (aPtr == NULL && bPtr == NULL) {
+        return 0;
+    }
+    if (aPtr == NULL) {
+        return -1;
+    }
+    if (bPtr == NULL) {
+        return 1;
+    }
+
+    size_t a = *(size_t *) aPtr;
+    size_t b = *(size_t *) bPtr;
+    if (a < b) {
+        return -1;
+    }
+    if (a > b) {
+        return 1;
+    }
+    return 0;
+}
+
+static bool checkForDuplicateIds(size_t *ids, size_t idCount) {
+    if (ids == NULL && idCount == 0) {
+        return true;
+    }
+    if (ids == NULL) {
+        return false;
+    }
+    if (idCount <= 1) {
+        return true;
+    }
+
+    /* W posortowanym ciągu dwa takie same id będą obok siebie. */
+    qsort(ids, idCount, sizeof(size_t), compareSize_t);
+    for (size_t i = 0; i < idCount - 1; i++) {
+        if (ids[i] == ids[i + 1]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 static Road *findRoad(const City *city1, const City *city2) {
@@ -362,31 +409,34 @@ bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repa
     return false;
 }
 
-bool setupRoad(Map *map, const char *cityName1, const char *cityName2,
-               unsigned length, int repairYear) {
-    /* Jeśli da się dodać to dodajemy. */
-    if (addRoad(map, cityName1, cityName2, length, repairYear)) {
-        return true;
-    }
-
-    /* Sprawdzamy TYLKO długość drogi. */
+RoadStatus getRoadStatus(Map *map, const char *cityName1, const char *cityName2,
+                         unsigned length, int repairYear) {
     City *city1 = NULL;
     City *city2 = NULL;
     Road *road = NULL;
 
-    FAIL_IF(map == NULL);
+    FAIL_IF(map == NULL || repairYear == 0 || length == 0);
+    FAIL_IF(!checkName(cityName1) || !checkName(cityName2) || strcmp(cityName1, cityName2) == 0);
 
     city1 = valueInDict(map->cities, cityName1);
     city2 = valueInDict(map->cities, cityName2);
     road = findRoad(city1, city2);
 
-    FAIL_IF(road == NULL || road->length != length);
+    if (road == NULL) {
+        return ROAD_ADDABLE;
+    }
 
-    return repairRoad(map, cityName1, cityName2, repairYear);
+    FAIL_IF(road->length != length);
+    if (road->lastRepaired < repairYear) {
+        return ROAD_REPAIRABLE;
+    }
+    if (road->lastRepaired == repairYear) {
+        return ROAD_EXACT;
+    }
 
     FAILURE:
 
-    return false;
+    return ROAD_ILLEGAL;
 }
 
 bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cityName2) {
@@ -434,25 +484,32 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
     Vector *roads = NULL;
     City *firstCity = NULL;
     City *lastCity = NULL;
+    size_t *usedCities = NULL;
     Route *route = NULL;
     unsigned *id = NULL;
 
-    FAIL_IF(map == NULL || !checkRouteId(routeId) || map->routes[routeId] || cityCount < 2);
+    FAIL_IF(map == NULL || !checkRouteId(routeId) || map->routes[routeId] != NULL || cityCount < 2);
     FAIL_IF(cityNames == NULL || !checkName(cityNames[0]));
 
     roads = initVector();
-    FAIL_IF(roads == NULL);
+    usedCities = malloc(sizeof(size_t) * cityCount);
+    FAIL_IF(roads == NULL || usedCities == NULL);
 
     firstCity = valueInDict(map->cities, cityNames[0]);
-    /* Nie ma sprawdzenia czy miasta są NULL bo wystarczy drogę. */
+    /* Nie ma sprawdzenia czy miasta są NULL bo wystarczy sprawdzać drogę. */
     lastCity = firstCity;
     for (size_t i = 0; i < cityCount - 1; i++) {
-        FAIL_IF(checkName(cityNames[i + 1]));
+        FAIL_IF(!checkName(cityNames[i + 1]));
         City *nextCity = valueInDict(map->cities, cityNames[i + 1]);
         Road *road = findRoad(lastCity, nextCity);
-        FAIL_IF(road == NULL || pushToVector(roads, road));
+        FAIL_IF(road == NULL || !pushToVector(roads, road));
+        usedCities[i] = lastCity->id;
         lastCity = nextCity;
     }
+    usedCities[cityCount - 1] = lastCity->id;
+    FAIL_IF(!checkForDuplicateIds(usedCities, cityCount));
+    free(usedCities);
+    usedCities = NULL;
 
     /* Po wykonaniu całej pętli w lastCity jest ostatnie miasto na drodze. */
     route = initRoute(roads, firstCity, lastCity);
@@ -461,8 +518,9 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
     id = malloc(sizeof(unsigned));
     FAIL_IF(id == NULL);
     *id = routeId;
-    FAIL_IF(pushToVector(map->doneRoutes, id));
+    FAIL_IF(!pushToVector(map->doneRoutes, id));
 
+    map->routes[routeId] = route;
     return true;
 
     FAILURE:
@@ -472,6 +530,7 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
     }
     free(id);
     deleteRoute(route);
+    free(usedCities);
     deleteVector(roads, NULL);
     return false;
 }
@@ -633,11 +692,9 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     return false;
 }
 
-char const *getRouteDescription(const Map *map, unsigned routeId) {
+char const *getRouteDescription(Map *map, unsigned routeId) {
     char *description = NULL;
-    FAIL_IF(map == NULL || !checkRouteId(routeId));
-
-    if (map->routes[routeId] == NULL) {
+    if (map == NULL || !checkRouteId(routeId) || map->routes[routeId] == NULL) {
         return calloc(1, sizeof(char));
     }
 

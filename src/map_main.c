@@ -23,7 +23,7 @@ static bool stringToInt(const char *str, int *number);
 
 static bool executeCommand(char *command, size_t len);
 
-static bool createCustomRoute(unsigned routeId, const char **parameters, size_t parameterCount);
+static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t parameterCount);
 
 static char *getNextParameter(char *string) {
     static char *savePointer = NULL;
@@ -121,6 +121,7 @@ static bool executeCommand(char *command, size_t len) {
     size_t parameterCount = sizeOfVector(parametersVector);
     const char **parameters = (const char **) storageBlockOfVector(parametersVector);
     if (parameterCount == 0) {
+        deleteVector(parametersVector, NULL);
         return true;
     }
 
@@ -153,18 +154,21 @@ static bool executeCommand(char *command, size_t len) {
         FAIL_IF(!stringToUnsigned(parameters[1], &routeId));
 
         deleteVector(parametersVector, NULL);
-        const char *description = getRouteDescription(map, routeId);
+        char *description = (char *) getRouteDescription(map, routeId);
         if (description == NULL) {
             return false;
         }
 
         printf("%s\n", description);
+        free(description);
         return true;
     }
 
     unsigned routeId;
     FAIL_IF(!stringToUnsigned(parameters[0], &routeId));
-    return createCustomRoute(routeId, parameters + 1, parameterCount - 1);
+    bool result = executeCreateRoute(routeId, parameters + 1, parameterCount - 1);
+    deleteVector(parametersVector, NULL);
+    return result;
 
     FAILURE:
 
@@ -172,12 +176,17 @@ static bool executeCommand(char *command, size_t len) {
     return false;
 }
 
-static bool createCustomRoute(unsigned routeId, const char **parameters, size_t parameterCount) {
+int doneRoutes[1000]; // todo
+
+static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t parameterCount) {
     const char **cityNames = NULL;
-    int *roadLengths = NULL;
-    unsigned *roadYears = NULL;
+    unsigned *roadLengths = NULL;
+    int *roadYears = NULL;
+    RoadStatus *roadStatuses = NULL;
     size_t roadCount = parameterCount / 3;
     FAIL_IF(roadCount < 1 || roadCount * 3 + 1 != parameterCount);
+    FAIL_IF(routeId == 0 || routeId >= 1000); //todo
+    FAIL_IF(doneRoutes[routeId]);
 
     cityNames = malloc(sizeof(const char *) * (roadCount + 1));
     roadLengths = malloc(sizeof(int) * roadCount);
@@ -187,17 +196,45 @@ static bool createCustomRoute(unsigned routeId, const char **parameters, size_t 
     for (size_t i = 0; i < roadCount; i++) {
         size_t nr = i * 3;
         cityNames[i] = parameters[nr++];
-        FAIL_IF(!stringToInt(parameters[nr++], &roadLengths[i]));
-        FAIL_IF(!stringToUnsigned(parameters[nr++], &roadYears[i]));
+        FAIL_IF(!stringToUnsigned(parameters[nr++], &roadLengths[i]));
+        FAIL_IF(!stringToInt(parameters[nr++], &roadYears[i]));
     }
     cityNames[roadCount] = parameters[roadCount * 3];
 
+    { // TODO usun
+        for (size_t i = 0; i < roadCount + 1; i++) {
+            for (size_t j = 0; j < i; j++) {
+                FAIL_IF(strcmp(cityNames[i], cityNames[j]) == 0);
+            }
+        }
+    }
+
+    roadStatuses = malloc(sizeof(RoadStatus) * roadCount);
+    FAIL_IF(roadStatuses == NULL);
     for (size_t i = 0; i < roadCount; i++) {
-        FAIL_IF(!setupRoad(map, cityNames[i], cityNames[i + 1], roadLengths[i], roadYears[i]));
+        roadStatuses[i] = getRoadStatus(map, cityNames[i], cityNames[i + 1],
+                                        roadLengths[i], roadYears[i]);
+        FAIL_IF(roadStatuses[i] == ROAD_ILLEGAL);
+    }
+
+    for (size_t i = 0; i < roadCount; i++) {
+        switch (roadStatuses[i]) {
+            case ROAD_REPAIRABLE:
+                FAIL_IF(!repairRoad(map, cityNames[i], cityNames[i + 1], roadYears[i]));
+                break;
+            case ROAD_ADDABLE:
+                FAIL_IF(!addRoad(map, cityNames[i], cityNames[i + 1],
+                                 roadLengths[i], roadYears[i]));
+                break;
+            default:
+                break;
+        }
     }
 
     FAIL_IF(!createRoute(map, routeId, cityNames, roadCount + 1));
 
+    doneRoutes[routeId] = 1; // todo
+    free(roadStatuses);
     free(roadYears);
     free(roadLengths);
     free(cityNames);
@@ -205,6 +242,7 @@ static bool createCustomRoute(unsigned routeId, const char **parameters, size_t 
 
     FAILURE:
 
+    free(roadStatuses);
     free(roadYears);
     free(roadLengths);
     free(cityNames);
