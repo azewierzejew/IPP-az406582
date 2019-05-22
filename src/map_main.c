@@ -212,14 +212,48 @@ static bool executeCommand(char *command, size_t len) {
         FAIL_IF(!stringToUnsigned(parameters[1], &routeId));
 
         deleteVector(parametersVector, NULL);
+        parametersVector = NULL;
         char *description = (char *) getRouteDescription(map, routeId);
-        if (description == NULL) {
-            return false;
-        }
+        FAIL_IF(description == NULL);
 
         printf("%s\n", description);
         free(description);
         return true;
+    }
+    if (strcmp(command, "newRoute") == 0) {
+        FAIL_IF(parameterCount != 4);
+        unsigned routeId;
+        FAIL_IF(!stringToUnsigned(parameters[1], &routeId));
+        const char *city1Name = parameters[2];
+        const char *city2Name = parameters[3];
+
+        deleteVector(parametersVector, NULL);
+        return newRoute(map, routeId, city1Name, city2Name);
+    }
+    if (strcmp(command, "extendRoute") == 0) {
+        FAIL_IF(parameterCount != 3);
+        unsigned routeId;
+        FAIL_IF(!stringToUnsigned(parameters[1], &routeId));
+        const char *cityName = parameters[2];
+
+        deleteVector(parametersVector, NULL);
+        return extendRoute(map, routeId, cityName);
+    }
+    if (strcmp(command, "removeRoad") == 0) {
+        FAIL_IF(parameterCount != 3);
+        const char *city1Name = parameters[1];
+        const char *city2Name = parameters[2];
+
+        deleteVector(parametersVector, NULL);
+        return removeRoad(map, city1Name, city2Name);
+    }
+    if (strcmp(command, "removeRoute") == 0) {
+        FAIL_IF(parameterCount != 2);
+        unsigned routeId;
+        FAIL_IF(!stringToUnsigned(parameters[1], &routeId));
+
+        deleteVector(parametersVector, NULL);
+        return removeRoute(map, routeId);
     }
 
     unsigned routeId;
