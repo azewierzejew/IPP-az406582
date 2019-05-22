@@ -329,8 +329,7 @@ Map *newMap() {
     map->cities = initDict();
     map->routes = calloc(MAX_ROUTE_ID + 1, sizeof(Route));
     map->cityCount = 0;
-    map->doneRoutes = initVector();
-    if (map->cities == NULL || map->routes == NULL || map->doneRoutes == NULL) {
+    if (map->cities == NULL || map->routes == NULL) {
         deleteMap(map);
         return NULL;
     }
@@ -345,7 +344,6 @@ void deleteMap(Map *map) {
 
     deleteDict(map->cities, deleteCity);
     free(map->routes);
-    deleteVector(map->doneRoutes, free);
     free(map);
 }
 
@@ -444,7 +442,6 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
     City *city2 = NULL;
     Vector *roads = NULL;
     Route *route = NULL;
-    unsigned *id = NULL;
 
     FAIL_IF(map == NULL || !checkRouteId(routeId) || map->routes[routeId] != NULL);
     FAIL_IF(!checkName(cityName1) || !checkName(cityName2) || strcmp(cityName1, cityName2) == 0);
@@ -460,12 +457,6 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
     FAIL_IF(route == NULL);
     roads = NULL;
 
-    id = malloc(sizeof(unsigned));
-    FAIL_IF(id == NULL);
-
-    *id = routeId;
-    FAIL_IF(!pushToVector(map->doneRoutes, id));
-
     map->routes[routeId] = route;
     return true;
 
@@ -473,10 +464,6 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
 
     deleteVector(roads, NULL);
     deleteRoute(route);
-    if (map != NULL) {
-        popFromVector(map->doneRoutes, id, NULL);
-    }
-    free(id);
     return false;
 }
 
@@ -486,7 +473,6 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
     City *lastCity = NULL;
     size_t *usedCities = NULL;
     Route *route = NULL;
-    unsigned *id = NULL;
 
     FAIL_IF(map == NULL || !checkRouteId(routeId) || map->routes[routeId] != NULL || cityCount < 2);
     FAIL_IF(cityNames == NULL || !checkName(cityNames[0]));
@@ -515,20 +501,11 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
     route = initRoute(roads, firstCity, lastCity);
     FAIL_IF(route == NULL);
 
-    id = malloc(sizeof(unsigned));
-    FAIL_IF(id == NULL);
-    *id = routeId;
-    FAIL_IF(!pushToVector(map->doneRoutes, id));
-
     map->routes[routeId] = route;
     return true;
 
     FAILURE:
 
-    if (map != NULL) {
-        popFromVector(map->doneRoutes, id, NULL);
-    }
-    free(id);
     deleteRoute(route);
     free(usedCities);
     deleteVector(roads, NULL);
@@ -644,10 +621,7 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     replacementParts = calloc(MAX_ROUTE_ID + 1, sizeof(Vector *));
     FAIL_IF(replacementParts == NULL);
 
-    size_t doneRouteCount = sizeOfVector(map->doneRoutes);
-    unsigned **doneRoutes = (unsigned **) storageBlockOfVector(map->doneRoutes);
-    for (size_t i = 0; i < doneRouteCount; i++) {
-        unsigned id = *doneRoutes[i];
+    for (size_t id = 0; id <= MAX_ROUTE_ID; id++) {
         Route *route = map->routes[id];
         if (route == NULL || !existsInVector(route->roads, road)) {
             continue;
@@ -664,8 +638,7 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     }
 
 
-    for (size_t i = 0; i < doneRouteCount; i++) {
-        unsigned id = *doneRoutes[i];
+    for (size_t id = 0; id <= MAX_ROUTE_ID; id++) {
         if (map->routes[id] != NULL && replacementParts[id] != NULL) {
             /* Jest pewność, że się powiedzie. */
             replaceValueWithVector(map->routes[id]->roads, road, replacementParts[id]);
@@ -733,4 +706,14 @@ char const *getRouteDescription(Map *map, unsigned routeId) {
 
     free(description);
     return NULL;
+}
+
+bool removeRoute(Map *map, unsigned routeId) {
+    if (map == NULL || !checkRouteId(routeId) || map->routes[routeId] == NULL) {
+        return false;
+    }
+
+    deleteRoute(map->routes[routeId]);
+    map->routes[routeId] = NULL;
+    return true;
 }

@@ -195,4 +195,6 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2);
  */
 char const *getRouteDescription(Map *map, unsigned routeId);
 
+bool removeRoute(Map *map, unsigned routeId);
+
 #endif /* __DROGI_MAP_H__ */
