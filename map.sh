@@ -8,9 +8,9 @@ fi
 
 parameters=("$@")
 file=$1
-numbers=${parameters[@]:1}
+numbers=("${parameters[@]:1}")
 
-test -f $file
+test -f "$file"
 if (( $? != 0))
 then
     echo "File does not exist."
@@ -22,9 +22,9 @@ function split () {
     second_part=$(echo $1 | cut -s -d";" -f2-)
 }
 positiveNumberRegex="^([1-9]([0-9])*|0)$"
-for id in $numbers
+for id in "${numbers[@]}"
 do
-    if ! [[ $id =~ $positiveNumberRegex ]]
+    if ! [[ "$id" =~ $positiveNumberRegex ]]
     then
         echo "Parameters after file should be numbers positive or zero written in decimal."
         exit 1
@@ -36,7 +36,7 @@ do
         exit 1
     fi
 
-    description=$(grep "^$id;.*$" $file)
+    description=$(grep "^$id;.*$" "$file")
     if [[ "$description" == "" ]]
     then
         echo ""
@@ -48,9 +48,9 @@ do
 
     while ! [[ "$description" == "" ]]
     do
-        split $description
-        param=$first_part
-        description=$second_part
+        split "$description"
+        param="$first_part"
+        description="$second_part"
 
         if (( $i % 3 == 0 ))
         then
