@@ -5,8 +5,8 @@
  * @date 14.05.2019
  */
 
-#ifndef __DROGI_UTILITY_H__
-#define __DROGI_UTILITY_H__
+#ifndef DROGI_UTILITY_H
+#define DROGI_UTILITY_H
 
 /** Etykieta niepowodzenia funkcji. */
 #define FAILURE UTILITY_H_FAILURE_LABEL
@@ -23,4 +23,4 @@
  */
 #define FAIL do { goto FAILURE; } while (0)
 
-#endif /* __DROGI_UTILITY_H__ */
+#endif /* DROGI_UTILITY_H */

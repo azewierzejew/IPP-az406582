@@ -5,8 +5,8 @@
  * @date 29.03.2019
  */
 
-#ifndef __DROGI_VECTOR_H__
-#define __DROGI_VECTOR_H__
+#ifndef DROGI_VECTOR_H
+#define DROGI_VECTOR_H
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -119,4 +119,4 @@ bool existsInVector(const Vector *vector, const void *value);
  */
 bool appendVector(Vector *vector, Vector *part);
 
-#endif /*__DROGI_VECTOR_H__ */
+#endif /*DROGI_VECTOR_H */

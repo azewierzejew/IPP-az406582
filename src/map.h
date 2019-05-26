@@ -6,8 +6,8 @@
  * @date 20.03.2019
  */
 
-#ifndef __DROGI_MAP_H__
-#define __DROGI_MAP_H__
+#ifndef DROGI_MAP_H
+#define DROGI_MAP_H
 
 #include <stdbool.h>
 #include <stdlib.h>
@@ -197,4 +197,4 @@ char const *getRouteDescription(Map *map, unsigned routeId);
 
 bool removeRoute(Map *map, unsigned routeId);
 
-#endif /* __DROGI_MAP_H__ */
+#endif /* DROGI_MAP_H */

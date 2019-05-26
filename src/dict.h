@@ -5,8 +5,8 @@
  * @date 29.03.2019
  */
 
-#ifndef __DROGI_DICT_H__
-#define __DROGI_DICT_H__
+#ifndef DROGI_DICT_H
+#define DROGI_DICT_H
 
 #include "vector.h"
 
@@ -51,4 +51,4 @@ bool addToDict(Dict *dict, const char *word, void *value);
 void *valueInDict(const Dict *dict, const char *word);
 
 
-#endif /* __DROGI_DICT_H__ */
+#endif /* DROGI_DICT_H */

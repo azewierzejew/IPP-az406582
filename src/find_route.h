@@ -5,8 +5,8 @@
  * @date 29.03.2019
  */
 
-#ifndef __DROGI_FIND_ROUTE_H__
-#define __DROGI_FIND_ROUTE_H__
+#ifndef DROGI_FIND_ROUTE_H
+#define DROGI_FIND_ROUTE_H
 
 #include "map_basics.h"
 
@@ -64,4 +64,4 @@ int compareDistances(Distance distance1, Distance distance2);
  */
 RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vector *usedRoads);
 
-#endif /* __DROGI_FIND_ROUTE_H__ */
+#endif /* DROGI_FIND_ROUTE_H */
