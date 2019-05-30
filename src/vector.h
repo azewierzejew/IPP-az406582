@@ -119,4 +119,4 @@ bool existsInVector(const Vector *vector, const void *value);
  */
 bool appendVector(Vector *vector, Vector *part);
 
-#endif /*DROGI_VECTOR_H */
+#endif /* DROGI_VECTOR_H */
