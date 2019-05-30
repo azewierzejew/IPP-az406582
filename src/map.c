@@ -340,7 +340,7 @@ void deleteMap(Map *map) {
     if (map == NULL) {
         return;
     }
-    
+
     if (map->routes != NULL) {
         for (size_t i = 0; i <= MAX_ROUTE_ID; i++) {
             deleteRoute(map->routes[i]);
