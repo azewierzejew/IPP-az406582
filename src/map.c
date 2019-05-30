@@ -30,7 +30,7 @@ static City *initCity(const char *name, size_t id);
 
 static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2);
 
-static Route *initRoute(Vector *roads, City *end1, City *end2);
+static Route *initRoute(Vector **const roadsPtr, City *end1, City *end2);
 
 static void deleteRoad(void *roadVoid);
 
@@ -99,15 +99,20 @@ static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2) {
     return road;
 }
 
-static Route *initRoute(Vector *roads, City *end1, City *end2) {
+static Route *initRoute(Vector **const roadsPtr, City *end1, City *end2) {
+    if (roadsPtr == NULL) {
+        return NULL;
+    }
+
     Route *route = malloc(sizeof(Route));
     if (route == NULL) {
         return NULL;
     }
 
-    route->roads = roads;
+    route->roads = *roadsPtr;
     route->end1 = end1;
     route->end2 = end2;
+    *roadsPtr = NULL;
     return route;
 }
 
@@ -458,9 +463,8 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
     roads = findRoute(map, city1, city2, NULL).roads;
     FAIL_IF(roads == NULL);
 
-    route = initRoute(roads, city1, city2);
+    route = initRoute(&roads, city1, city2);
     FAIL_IF(route == NULL);
-    roads = NULL;
 
     map->routes[routeId] = route;
     return true;
@@ -503,7 +507,7 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
     usedCities = NULL;
 
     /* Po wykonaniu całej pętli w lastCity jest ostatnie miasto na drodze. */
-    route = initRoute(roads, firstCity, lastCity);
+    route = initRoute(&roads, firstCity, lastCity);
     FAIL_IF(route == NULL);
 
     map->routes[routeId] = route;
