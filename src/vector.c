@@ -1,10 +1,17 @@
-#include "vector.h"
+/** @file
+ * Implementacja klasy będącej wektorem, czyli tablicą dynamicznej długości.
+ *
+ * @author Antoni Żewierżejew <azewierzejew@gmail.com>
+ * @date 27.04.2019
+ */
 
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "vector.h"
 
-/* Deklaracje struktur. */
+
+/* Definicje struktur. */
 
 /** Przechowuje wektor. */
 struct VectorStruct {
@@ -19,13 +26,24 @@ struct VectorStruct {
 
 /* Funkcje pomocnicze. */
 
-
+/**
+ * @brief Zmienia rozmiar bloku w którym są zapisane elementy wektora.
+ * Realokuje blok z zapisanymi elementami wektora do długości @p len.
+ * Nie wykona zmiany, która by usunęła wskaźniki na elementy z pamięci.
+ * @param[in,out] vector - wskaźnik na wektor.
+ * @param[in,out] len    - oczekiwana długość.
+ * @return @p true lub @p false w zależności od powodzenia operacji.
+ */
 static inline bool resizeVector(Vector *vector, size_t len);
+
 
 /* Implementacja funkcji pomocniczych. */
 
-
 static inline bool resizeVector(Vector *vector, size_t len) {
+    if (vector == NULL || len < vector->count) {
+        return false;
+    }
+
     void **newHolder = realloc(vector->holder, len * sizeof(void *));
     if (newHolder == NULL) {
         return false;
@@ -38,7 +56,6 @@ static inline bool resizeVector(Vector *vector, size_t len) {
 
 
 /* Funkcje z interfejsu. */
-
 
 Vector *initVector() {
     Vector *vector = malloc(sizeof(Vector));
@@ -72,7 +89,7 @@ bool pushToVector(Vector *vector, void *value) {
         return false;
     }
 
-    if (vector->space == vector->count) {
+    if (vector->space >= vector->count) {
         if (!resizeVector(vector, vector->space * 2 + 2)) {
             return false;
         }
@@ -186,7 +203,7 @@ bool prepareForReplacingValueWithVector(Vector *vector, const void *value, Vecto
     size_t addedCount = sizeOfVector(part);
     size_t totalCount = vector->count + addedCount - 1;
     if (totalCount > vector->space) {
-        size_t newSize = totalCount;
+        size_t newSize = totalCount + 1;
         if (newSize <= vector->space * 2) {
             newSize = vector->space * 2 + 1;
         }
@@ -213,7 +230,7 @@ bool existsInVector(const Vector *vector, const void *value) {
 }
 
 bool appendVector(Vector *vector, Vector *part) {
-    if (vector == NULL || part == NULL) {
+    if (vector == NULL) {
         return false;
     }
 
@@ -221,7 +238,7 @@ bool appendVector(Vector *vector, Vector *part) {
     size_t addedCount = sizeOfVector(part);
     size_t totalCount = elementCount + addedCount;
     if (totalCount > vector->space) {
-        size_t newSize = totalCount;
+        size_t newSize = totalCount + 1;
         if (newSize <= vector->space * 2) {
             newSize = vector->space * 2 + 1;
         }
