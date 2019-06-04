@@ -1,6 +1,12 @@
+/** @file
+ * Implementacja klasy przechowującej minimalny kopiec.
+ *
+ * @author Antoni Żewierżejew <azewierzejew@gmail.com>
+ * @date 29.03.2019
+ */
+
 #include "heap.h"
 #include "vector.h"
-#include "map_basics.h"
 
 #include <stdbool.h>
 
@@ -19,7 +25,33 @@ struct HeapStruct {
 
 /* Funkcje pomocnicze. */
 
+/**
+ * @brief Zamienia w tablicy dwie warotści na podanych pozycjach.
+ * @param[in,out] array - wskaźnik na tablicę.
+ * @param[in] index1    - indeks pierwszego elementu,
+ * @param[in] index2    - indeks drugiego elementu.
+ */
+static void swap(void **array, size_t index1, size_t index2);
+
+/**
+ * @brief Porównuje elementy na kopcu.
+ * Porównuje elementy na kopcu korzystając z przypisanego mu komparatora.
+ * @p NULL jest uznawany za większy od każdego innego elementu.
+ * @param[in] heap     - wskaźnik na kopiec,
+ * @param[in] element1 - wskaźnik na pierwszy element,
+ * @param[in] element2 - wskaźnik na drugi element.
+ * @return @p -1, @p 0, @p 1 w zależności czy pierwszy element jest mniejszy, równy, większy.
+ */
+static int heapCompare(Heap *heap, void *element1, void *element2);
+
+
+/* Implementacja funkcji pomocniczych. */
+
 static void swap(void **array, size_t index1, size_t index2) {
+    if (array == NULL) {
+        return;
+    }
+
     void *tmp = array[index1];
     array[index1] = array[index2];
     array[index2] = tmp;
