@@ -335,7 +335,7 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
 int main() {
     map = newMap();
     if (map == NULL) {
-        exit(0);
+        return 0;
     }
 
     char *buff = NULL;

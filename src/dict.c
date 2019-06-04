@@ -1,3 +1,10 @@
+/** @file
+ * Implementacja klasy przechowującej słownik.
+ *
+ * @author Antoni Żewierżejew <azewierzejew@gmail.com>
+ * @date 27.04.2019
+ */
+
 #define _GNU_SOURCE
 
 #include "dict.h"
@@ -11,15 +18,15 @@
 
 /* Definicje typów. */
 
-/** Struktura odpowiadająca za jedno słowo w słowniku. */
+/** Struktura odpowiadająca za jeden wpis w słowniku. */
 typedef struct EntryStruct Entry;
-/** Struktura odpowiadająca za kubełek słów o wspólnym haszu. */
+/** Struktura odpowiadająca za kubełek wpisów o wspólnym haszu. */
 typedef struct BucketStruct Bucket;
 
 
 /* Deklaracje struktur. */
 
-/** Przechowuje słowo ze słownika. */
+/** Przechowuje wpis ze słownika. */
 struct EntryStruct {
     /** Wskaźnik na napis reprezentujący słowo. */
     char *word;
@@ -28,8 +35,8 @@ struct EntryStruct {
 };
 
 /**
- * Kubełek słów o jednakowym haszu.
- * Kubełki są układane w strukturę drzewa BST ze względu na hash.
+ * Kubełek wpisów o jednakowym haszu.
+ * Kubełki są układane w strukturę drzewa BST ze względu na hasz.
  */
 struct BucketStruct {
     /** Hasz danego kubełka. */
@@ -51,24 +58,73 @@ struct DictStruct {
 
 /* Stałe. */
 
+/** Modulo używane przy haszowaniu. */
 static const uint64_t HASH_MODULO = 1770134209;
+/** Początkowa wartość hasza dla pustego słowa. */
 static const uint64_t HASH_START = HASH_MODULO & 0xaaaaaaaa;
+/** Mnożnik do przemnażania kolejnych liter przy haszowaniu. */
 static const uint64_t HASH_MULTIPLIER = 257;
+/** Maska do ekstrakcji wartości z hasza, aby sxorować a bajtem. */
 static const uint64_t HASH_XOR_MASK = 0xff;
 
 
 /* Funkcje pomocnicze. */
 
+/**
+ * @brief Tworzy pojedyncze wejście do słownika.
+ * Tworzy wejście, czyli @ref Entry, które zawiera słowo i przypisaną mu wartość.
+ * Słowo dla danego wejścia jest kopiowane do nowego miejsca w pamięci.
+ * @param[in] word  - słowo,
+ * @param[in] value - wartość dla słowa.
+ * @return Wskaźnik na wpis lub @p NULL gdy się nie powiodło utworzenie.
+ */
 static Entry *initEntry(const char *word, void *value);
 
+/**
+ * @brief Tworzy kubełek wpisów.
+ * Tworzy nowy, pusty kubełek wpisów i przypisuje mu dany hasz.
+ * @param[in] hash - hasz kubełka.
+ * @return Wskaźnik na kubełek lub @p NULL gdy się nie powiodło utworzenie.
+ */
 static Bucket *initBucket(uint64_t hash);
 
+/**
+ * @brief Liczy hash słowa.
+ * Liczy hasz, czyli funkcję skrótu, dwa takie same słowa zawsze mają tę samą wartość.
+ * @param[in] word - słowo.
+ * @return hash danego słowa.
+ */
 static uint64_t hashWord(const char *word);
 
+/**
+ * @brief Usuwa kubełek haszy wraz z zawartością.
+ * Jeśli @p valueDestructor to @p NULL nie wywołuje go.
+ * @param bucket
+ * @param valueDestructor
+ */
 static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *));
 
+/**
+ * @brief Znajduje kubełek o podanym hashu.
+ * Mając dany hasz i wskaźnik na korzeń drzewa BST kubełków znajduje odpowiedni kubełek.
+ * Jeśli taki nie istnieje to w kubełku, którego synem byłby kubełek o takim hashu
+ * znajduje odpowiedni wskaźnik na syna.
+ * Zwraca wskaźnik na odpowiedni wskaźnik, zatem jeśli kubełek nie istnieje to
+ * zwraca wskaźnik na NULL w miejscu gdzie należałoby taki kubełek dodać.
+ * Pozwala to właśnie na dodanie kubełka bez znania kontekstu w jakim się znajduje.
+ * @param[in] bucketPtr - wskaźnik na wskaźnik na kubełek będący korzeniem,
+ * @param[in] hash      - hasz kubełka.
+ * @return Wskaźnik na wskaźnik pod którym powinien być kubełek.
+ */
 static Bucket **findBucketPtr(Bucket **bucketPtr, uint64_t hash);
 
+/**
+ * @brief Znajduje kubełek o podanym haszu.
+ * Znajduje kubełek o podanym haszu w drzewie BST kubełków.
+ * @param[in] bucket - kubełek będący korzeniem drzewa,
+ * @param[in] hash   - szukany hasz.
+ * @return Wskaźnik na kubełek lub @p NULL jeśli nie ma.
+ */
 static Bucket *findBucket(Bucket *bucket, uint64_t hash);
 
 

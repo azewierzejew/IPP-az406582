@@ -5,10 +5,10 @@
  * @date 27.04.2019
  */
 
+#include "vector.h"
+
 #include <stdlib.h>
 #include <stdbool.h>
-
-#include "vector.h"
 
 
 /* Definicje struktur. */
