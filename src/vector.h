@@ -31,7 +31,7 @@ void deleteVector(Vector *vector, void valueDestructor(void *));
 
 /**
  * @brief Dodaje wartość na koniec wektora.
- * Jeśli wektor lub wartość to @p NULL zwraca to nie dodaje.
+ * Jeśli wektor lub wartość to @p NULL zwraca to jej nie dodaje.
  * @param[in,out] vector - wskaźnik na wektor;
  * @param[in] value      - wartość do dodania.
  * @return Wartość @p true jeśli się powiodło dodawanie, @p false w p.p.
@@ -78,7 +78,7 @@ void **storageBlockOfVector(const Vector *vector);
  * @brief Na miejsce wartości podstawia zawartość @p part.
  * Znajduje w wektorze pierwsze od końca wystąpienie danej wartości.
  * Usuwa tą wartość, a w jej miejsce wstawia wszystkie elementy z @p part.
- * Jeśli @p part to działa tak samo jakby @p part było pustym wektorem.
+ * Jeśli @p part to @p NULL działa tak samo jakby @p part było pustym wektorem.
  * Następnie usuwa wektor @p part.
  * @param[in,out] vector - wskaźnik na wektor;
  * @param[in] value      - wartość wskazująca miejsce;
@@ -108,8 +108,8 @@ bool prepareForReplacingValueWithVector(Vector *vector, const void *value, Vecto
 bool existsInVector(const Vector *vector, const void *value);
 
 /**
- * @brief Na koniec jednego wektora wrzuca zawartość drugiego.
- * Wszystkie elementy w @p part wrzuca do @p vector.
+ * @brief Na koniec jednego wektora dodaje zawartość drugiego.
+ * Wszystkie elementy w @p part dodaje do @p vector.
  * Jeśli wektor to @p NULL lub zabraknie pamięci
  * to operacja kończy się niepowodzeniem.
  * Jeśli part to @p NULL nic nie robi.
