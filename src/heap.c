@@ -79,11 +79,12 @@ bool isEmptyHeap(const Heap *heap) {
     return isEmptyVector(heap->elements);
 }
 
-bool addToHeap(Heap *heap, void *value) {
-    if (heap == NULL || value == NULL) {
+bool addToHeap(Heap *heap, void **valuePtr) {
+    if (heap == NULL || valuePtr == NULL || *valuePtr == NULL) {
         return false;
     }
 
+    void *value = *valuePtr;
     if (!pushToVector(heap->elements, value)) {
         return false;
     }
@@ -99,6 +100,7 @@ bool addToHeap(Heap *heap, void *value) {
             break;
         }
     }
+    *valuePtr = NULL;
     return true;
 }
 

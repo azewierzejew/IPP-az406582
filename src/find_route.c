@@ -100,6 +100,7 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
     bool *blockedCities = NULL;
     Heap *heap = NULL;
     Vector *route = NULL;
+    RouteSearchHeapEntry *entry = NULL;
 
     RouteSearchAnswer answer;
     answer.count = -1;
@@ -135,13 +136,8 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
     distances[city2->id] = BASE_DISTANCE;
     {
         /* Szukana jest droga z city2 do city1, żeby odbudowując ją od tyłu była w dobrej kolejności. */
-        RouteSearchHeapEntry *baseEntry = initHeapEntry(distances[city2->id], city2);
-        if (baseEntry == NULL || !addToHeap(heap, baseEntry)) {
-            free(distances);
-            free(blockedCities);
-            deleteHeap(heap, free);
-            return answer;
-        }
+        entry = initHeapEntry(distances[city2->id], city2);
+        FAIL_IF(entry == NULL || !addToHeap(heap, (void **) &entry));
     }
 
     while (!isEmptyHeap(heap)) {
@@ -175,9 +171,9 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
 
             if (compareDistances(newDistance, distances[newCity->id]) < 0) {
                 distances[newCity->id] = newDistance;
-                RouteSearchHeapEntry *newEntry = initHeapEntry(newDistance, newCity);
+                entry = initHeapEntry(newDistance, newCity);
 
-                FAIL_IF(newEntry == NULL || !addToHeap(heap, newEntry));
+                FAIL_IF(entry == NULL || !addToHeap(heap, (void **) &entry));
             }
         }
     }
@@ -251,6 +247,7 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
 
     FAILURE:
 
+    free(entry);
     free(distances);
     free(blockedCities);
     deleteHeap(heap, free);
