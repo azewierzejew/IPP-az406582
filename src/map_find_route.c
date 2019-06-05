@@ -1,3 +1,10 @@
+/** @file
+ * Implementacja modułu znajdującego ścieżki w grafie miast.
+ *
+ * @author Antoni Żewierżejew <azewierzejew@gmail.com>
+ * @date 29.03.2019
+ */
+
 #include "map_find_route.h"
 #include "map_types.h"
 #include "map_graph.h"

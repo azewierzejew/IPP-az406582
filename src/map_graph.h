@@ -55,7 +55,6 @@ void deleteCity(void *cityVoid);
 /**
  * @brief Znajduje drugi koniec drogi.
  * Dla podanej drogi i miasta znajduje drugi koniec drogi.
- * Jeśli
  * @param[in] road - drugi koniec;
  * @param[in] end  - pierwszy koniec.
  * @return Wskaźnik na drugi koniec drogi, chyba że droga jest zablokowana,

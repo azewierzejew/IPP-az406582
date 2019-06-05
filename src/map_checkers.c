@@ -15,6 +15,7 @@
 /* Stałe eksportowane. */
 
 const unsigned MAX_ROUTE_ID = 999;
+const size_t MAX_ROUTE_ID_LENGTH = 3;
 
 
 /* Funkcje pomocnicze. */

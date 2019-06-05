@@ -1,5 +1,3 @@
-#define _GNU_SOURCE
-
 #include "map.h"
 #include "map_types.h"
 #include "map_checkers.h"
@@ -14,17 +12,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdint.h>
-#include <limits.h>
 #include <stdio.h>
 #include <inttypes.h>
-
-
-/* Stałe globalne. */
-
-static const size_t MAX_LENGTH_LENGTH = 10;
-static const size_t MAX_YEAR_LENGTH = 11;
-static const size_t MAX_ROUTE_ID_LENGTH = 3;
 
 
 /* Funkcje pomocnicze. */
@@ -34,12 +23,6 @@ static int compareSize_t(const void *aPtr, const void *bPtr);
 static bool checkForDuplicateIds(size_t *ids, size_t idCount);
 
 static City *addCity(Map *map, const char *cityName);
-
-static void addNameToDescription(char **description, const char *name);
-
-static void addUnsignedToDescription(char **description, unsigned number);
-
-static void addIntToDescription(char **description, int number);
 
 
 /* Implementacja funkcji pomocniczych. */
@@ -100,27 +83,6 @@ static City *addCity(Map *map, const char *cityName) {
 
     deleteCity(city);
     return NULL;
-}
-
-static void addNameToDescription(char **description, const char *name) {
-    if (description == NULL || name == NULL) {
-        return;
-    }
-
-    strcat(*description, name);
-    *description += strlen(name);
-    strcat(*description, ";");
-    *description += 1;
-}
-
-static void addUnsignedToDescription(char **description, unsigned number) {
-    sprintf(*description, "%u;", number);
-    *description += strlen(*description);
-}
-
-static void addIntToDescription(char **description, int number) {
-    sprintf(*description, "%d;", number);
-    *description += strlen(*description);
 }
 
 
@@ -479,46 +441,12 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
 }
 
 char const *getRouteDescription(Map *map, unsigned routeId) {
-    char *description = NULL;
     if (map == NULL || !checkRouteId(routeId) || map->routes[routeId] == NULL) {
         return calloc(1, sizeof(char));
     }
 
     Route *route = map->routes[routeId];
-    size_t roadCount = sizeOfVector(route->roads);
-    Road **roads = (Road **) storageBlockOfVector(route->roads);
-
-    City *position = route->end1;
-    size_t totalLength = MAX_ROUTE_ID_LENGTH + 1;
-    for (size_t i = 0; i < roadCount; i++) {
-        totalLength += strlen(position->name + 1);
-        totalLength += MAX_LENGTH_LENGTH + 1;
-        totalLength += MAX_YEAR_LENGTH + 1;
-        position = otherRoadEnd(roads[i], position);
-    }
-    totalLength += strlen(position->name) + 1;
-
-    description = malloc(sizeof(char) * totalLength);
-    FAIL_IF(description == NULL);
-
-    description[0] = '\0';
-    position = route->end1;
-    char *descriptionPosition = description;
-    addUnsignedToDescription(&descriptionPosition, routeId);
-    for (size_t i = 0; i < roadCount; i++) {
-        addNameToDescription(&descriptionPosition, position->name);
-        addUnsignedToDescription(&descriptionPosition, roads[i]->length);
-        addIntToDescription(&descriptionPosition, roads[i]->lastRepaired);
-        position = otherRoadEnd(roads[i], position);
-    }
-    strcat(descriptionPosition, position->name);
-
-    return description;
-
-    FAILURE:
-
-    free(description);
-    return NULL;
+    return generateRouteDescription(route, routeId);
 }
 
 bool removeRoute(Map *map, unsigned routeId) {

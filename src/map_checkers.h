@@ -8,12 +8,17 @@
 #ifndef DROGI_MAP_CHECKERS_H
 #define DROGI_MAP_CHECKERS_H
 
+#include <stdlib.h>
 #include <stdbool.h>
 
 /**
  * Stała oznaczająca maksymalny dopuszczalny numer drogi krajowej.
  */
 extern const unsigned MAX_ROUTE_ID;
+/**
+ * Maksymalna długość napisu reprezentującego rok naprawy drogi.
+ */
+extern const size_t MAX_ROUTE_ID_LENGTH;
 
 /**
  * @brief Sprawdza poprawność nazwy.
