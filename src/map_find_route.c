@@ -30,18 +30,49 @@ struct RouteSearchHeapEntryStruct {
 
 /* Stałe globalne. */
 
+/** Stała oznaczająca najgorszy możliwy dystans. */
 static const Distance WORST_DISTANCE = {UINT64_MAX - UINT_MAX, INT_MIN};
+/** Stała oznaczająca dystans od punktu do siebie samego. */
 static const Distance BASE_DISTANCE = {0, INT_MAX};
 
 
 /* Funkcje pomocnicze. */
 
+/**
+ * @brief Tworzy nowy wpis do kopca.
+ * Tworzy nowy wpis do kopca używanego w algorytmie Dijkstry.
+ * Te wpisy można potem wrzucać na kopiec i zdejmować wpis z najmniejszym dystansem.
+ * Wpisy te można usuwać zwykłem @p free.
+ * @param[in] distance - dystans dla danego wpisu;
+ * @param[in] city     - miasto do którego można dojść.
+ * @return Wskaźnik na nowy wpis lub @p NULL jeśli zabrakło pamięci.
+ */
 static RouteSearchHeapEntry *initHeapEntry(Distance distance, City *city);
 
+/**
+ * @brief Komparator wpisów (@ref RouteSearchHeapEntry) do użycia w kopcu.
+ * @param[in] heapEntry1Void - pierwszy wpis;
+ * @param[in] heapEntry2Void - drugi wpis.
+ * @return @p -1, @p 0 lub @p 1 w zależności od stosunku wpisów.
+ */
 static int compareRouteSearchHeapEntries(void *heapEntry1Void, void *heapEntry2Void);
 
+/**
+ * @brief Dodaje drogę do dystansu.
+ * Do odległości dodaje długość odcinka oraz bierze minimum z roku naprawy odcinka i roku naprawy w dystansie.
+ * @param[in] distance - dystans;
+ * @param[in] road     - odcinek drogowy.
+ * @return Sumaryczny dystans.
+ */
 static Distance addRoadToDistance(Distance distance, Road *road);
 
+/**
+ * @brief Dodaje dwa dystanse.
+ * Działa tak samo jak @ref addRoadToDistance, ale dodaje dystans a nie odcinek.
+ * @param[in] distance1 - pierwszy dystans;
+ * @param[in] distance2 - drugi dystans.
+ * @return Sumaryczny dystans.
+ */
 static Distance combineDistances(Distance distance1, Distance distance2);
 
 
