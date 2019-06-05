@@ -74,7 +74,7 @@ static const uint64_t HASH_XOR_MASK = 0xff;
  * @brief Tworzy pojedyncze wejście do słownika.
  * Tworzy wejście, czyli @ref Entry, które zawiera słowo i przypisaną mu wartość.
  * Słowo dla danego wejścia jest kopiowane do nowego miejsca w pamięci.
- * @param[in] word  - słowo,
+ * @param[in] word  - słowo;
  * @param[in] value - wartość dla słowa.
  * @return Wskaźnik na wpis lub @p NULL gdy się nie powiodło utworzenie.
  */
@@ -99,8 +99,8 @@ static uint64_t hashWord(const char *word);
 /**
  * @brief Usuwa kubełek haszy wraz z zawartością.
  * Jeśli @p valueDestructor to @p NULL nie wywołuje go.
- * @param bucket
- * @param valueDestructor
+ * @param[in,out] bucket      - wskaźnik na kubełek do usunięcia;
+ * @param[in] valueDestructor - funkcja do usuwania wartości z pamięci.
  */
 static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *));
 
@@ -112,7 +112,7 @@ static void deleteBucketTree(Bucket *bucket, void valueDestructor(void *));
  * Zwraca wskaźnik na odpowiedni wskaźnik, zatem jeśli kubełek nie istnieje to
  * zwraca wskaźnik na NULL w miejscu gdzie należałoby taki kubełek dodać.
  * Pozwala to właśnie na dodanie kubełka bez znania kontekstu w jakim się znajduje.
- * @param[in] bucketPtr - wskaźnik na wskaźnik na kubełek będący korzeniem,
+ * @param[in] bucketPtr - wskaźnik na wskaźnik na kubełek będący korzeniem;
  * @param[in] hash      - hasz kubełka.
  * @return Wskaźnik na wskaźnik pod którym powinien być kubełek.
  */
@@ -121,7 +121,7 @@ static Bucket **findBucketPtr(Bucket **bucketPtr, uint64_t hash);
 /**
  * @brief Znajduje kubełek o podanym haszu.
  * Znajduje kubełek o podanym haszu w drzewie BST kubełków.
- * @param[in] bucket - kubełek będący korzeniem drzewa,
+ * @param[in] bucket - kubełek będący korzeniem drzewa;
  * @param[in] hash   - szukany hasz.
  * @return Wskaźnik na kubełek lub @p NULL jeśli nie ma.
  */

@@ -124,7 +124,7 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
  * W danej mapie tworzy drogę krajową przechodzącą przez miasta o nazwach w @p cityNames.
  * Droga używa tylko istniejących odcinków, nie przechodzi przez żadne dodatkowe miasta i
  * przechodzi przez wszystkie miasta w zadanej kolejności.
- * @param[in,out] map
+ * @param[in,out] map TODO
  * @param[in] routeId
  * @param[in] cityNames
  * @param[in] cityCount
@@ -196,9 +196,10 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2);
 char const *getRouteDescription(Map *map, unsigned routeId);
 
 /**
- *
- * @param map
- * @param routeId
+ * @brief Usuwa drogę krajową z mapy.
+ * TODO
+ * @param[in,out] map - wskaźnik na strukturę przechowującą mapę dróg;
+ * @param[in] routeId - numer drogi krajowej.
  * @return
  */
 bool removeRoute(Map *map, unsigned routeId);

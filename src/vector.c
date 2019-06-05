@@ -30,7 +30,7 @@ struct VectorStruct {
  * @brief Zmienia rozmiar bloku w którym są zapisane elementy wektora.
  * Realokuje blok z zapisanymi elementami wektora do długości @p len.
  * Nie wykona zmiany, która by usunęła wskaźniki na elementy z pamięci.
- * @param[in,out] vector - wskaźnik na wektor.
+ * @param[in,out] vector - wskaźnik na wektor;
  * @param[in,out] len    - oczekiwana długość.
  * @return @p true lub @p false w zależności od powodzenia operacji.
  */

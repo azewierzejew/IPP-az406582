@@ -21,7 +21,7 @@ const unsigned MAX_ROUTE_ID = 999;
 
 /**
  * @brief Dla znaku sprawdza czy jest dopuszczalnym znakiem w nazwie.
- * @param[in] a - znak
+ * @param[in] a - znak do sprawdzenia.
  * @return @p true lub @p false w zależności czy znak jest dopuszczalny.
  */
 static bool correctChar(char a);

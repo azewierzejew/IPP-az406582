@@ -41,7 +41,7 @@ bool isEmptyHeap(const Heap *heap);
 
 /**
  * Dodaje nienullową wartość do kopca i zeruje wskaźnik pod podanym adresem.
- * @param[in,out] heap     - wskaźnik na kopiec.
+ * @param[in,out] heap     - wskaźnik na kopiec;
  * @param[in,out] valuePtr - wskaźnik na wartość.
  * @return @p true lub @p false w zależności od tego czy dodawanie się powiodło.
  */

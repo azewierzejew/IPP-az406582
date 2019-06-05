@@ -27,8 +27,8 @@ struct HeapStruct {
 
 /**
  * @brief Zamienia w tablicy dwie wartości na podanych pozycjach.
- * @param[in,out] array - wskaźnik na tablicę.
- * @param[in] index1    - indeks pierwszego elementu,
+ * @param[in,out] array - wskaźnik na tablicę;
+ * @param[in] index1    - indeks pierwszego elementu;
  * @param[in] index2    - indeks drugiego elementu.
  */
 static void swap(void **array, size_t index1, size_t index2);
@@ -37,8 +37,8 @@ static void swap(void **array, size_t index1, size_t index2);
  * @brief Porównuje elementy na kopcu.
  * Porównuje elementy na kopcu korzystając z przypisanego mu komparatora.
  * @p NULL jest uznawany za większy od każdego innego elementu.
- * @param[in] heap     - wskaźnik na kopiec,
- * @param[in] element1 - wskaźnik na pierwszy element,
+ * @param[in] heap     - wskaźnik na kopiec;
+ * @param[in] element1 - wskaźnik na pierwszy element;
  * @param[in] element2 - wskaźnik na drugi element.
  * @return @p -1, @p 0, @p 1 w zależności czy pierwszy element jest mniejszy, równy, większy.
  */
