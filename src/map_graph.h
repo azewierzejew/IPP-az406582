@@ -48,7 +48,7 @@ City *initCity(const char *name, size_t id);
 /**
  * @brief Usuwa miasto z pamięci.
  * Przyjmuje (void *) dla zgodności z generycznymi modułami.
- * @param[in] cityVoid - wskaźnik na miasto do usunięcia.
+ * @param[in,out] cityVoid - wskaźnik na miasto do usunięcia.
  */
 void deleteCity(void *cityVoid);
 
@@ -58,7 +58,7 @@ void deleteCity(void *cityVoid);
  * @param[in] road - drugi koniec;
  * @param[in] end  - pierwszy koniec.
  * @return Wskaźnik na drugi koniec drogi, chyba że droga jest zablokowana,
- * nie istnieje lub @p end nie jest jej końcem zwraca @p NULL.
+ * nie istnieje lub @p end nie jest jej końcem, wtedy zwraca @p NULL.
  */
 City *otherRoadEnd(const Road *road, const City *end);
 

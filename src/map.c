@@ -27,12 +27,13 @@
 
 /**
  * @brief Sprawdza czy na tablicy indeksów wszystkie są unikalne.
- *
- * @param ids
- * @param idCount
- * @return
+ * Sortuje tablicę indeksów, sprawdza czy są duplikaty.
+ * Potem usuwa tablicę i zmienia wskaźnik na @p NULL.
+ * @param[in,out] idsPtr - wskaźnik na wskaźnik na tablicę;
+ * @param[in] idCount    - liczba indeksów w tablicy.
+ * @return @p true jeśli nie ma duplikatów, @p false w p.p.
  */
-static bool checkForDuplicateIds(size_t **ids, size_t idCount);
+static bool checkForDuplicateIds(size_t **idsPtr, size_t idCount);
 
 /**
  * @brief Dodaje miasto do mapy.

@@ -78,7 +78,7 @@ static void addIntToDescription(char **description, int number) {
 
 /* Funkcje z interfejsu. */
 
-Route *initRoute(Vector **const roadsPtr, City *end1, City *end2) {
+Route *initRoute(Vector **roadsPtr, City *end1, City *end2) {
     if (roadsPtr == NULL) {
         return NULL;
     }

@@ -17,6 +17,9 @@ getRouteDescription;numer - wypisuje opis drogi krajowej o danym numerze, <br>
 addRoad;miasto1;miasto2;długość;rokBudowy - dodaje drogę jeśli to możliwe, <br>
 repairRoad;miasto1;miasto2;rokNaprawy - naprawia drogę jeśli to możliwe, <br>
 numer;miasto1;długość1;rok1;miasto2;długość2;rok2;...;miastoN - jeśli to możliwe tworzy drogę krajową o dokładnie takim opisie.
-Dodaje i naprawia odcinki w razie potrzeby. Nawet w wypadku niepowodzenia może dodać lub naprawić pewne odcinki.
-
+Dodaje i naprawia odcinki w razie potrzeby. Nawet w wypadku niepowodzenia może dodać lub naprawić pewne odcinki, <br>
+newRoute;routeId;city1;city2 - dodaje drogę krajową pomiędzy miastami, <br>
+extendRoute;routeId;city - przedłuża drogę krajową do danego miasta, <br>
+removeRoad;city1;city2 - usuwa odcinek drogowy i naprawia przechodzące przez niego drogi krajowe, <br>
+removeRoute;routeId - usuwa drogę krajową. <br>
 */

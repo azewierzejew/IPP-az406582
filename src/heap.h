@@ -16,8 +16,8 @@ typedef struct HeapStruct Heap;
 /**
  * @brief Tworzy nowy kopiec.
  * Tworzy pusty kopiec przypisując mu komparator definiujący porządek.
- * Comparator powinien zwracać ujemną liczbę gdy pierwszy element jest mniejszy,
- * dodatnią gdy jest większy i @p gdy są równe.
+ * Komparator powinien zwracać ujemną liczbę gdy pierwszy element jest mniejszy,
+ * dodatnią gdy jest większy i @p 0 gdy są równe.
  * @param[in] comparator - komparator do porównywania wartości.
  * @return Wskaźnik na kopiec, @p NULL w wypadku niepowodzenia.
  */

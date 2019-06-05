@@ -32,7 +32,7 @@ struct RouteSearchHeapEntryStruct {
 
 /** Stała oznaczająca najgorszy możliwy dystans. */
 static const Distance WORST_DISTANCE = {UINT64_MAX - UINT_MAX, INT_MIN};
-/** Stała oznaczająca dystans od punktu do siebie samego. */
+/** Stała oznaczająca dystans punktu do siebie samego. */
 static const Distance BASE_DISTANCE = {0, INT_MAX};
 
 

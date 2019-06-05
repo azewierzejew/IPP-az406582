@@ -23,11 +23,11 @@
  * @param[in] end2         - koniec drogi.
  * @return Wskaźnik na nową drogę krajową lub @p NULL.
  */
-Route *initRoute(Vector **const roadsPtr, City *end1, City *end2);
+Route *initRoute(Vector **roadsPtr, City *end1, City *end2);
 
 /**
  * @brief Usuwa drogę krajową.
- * Usuwa samą drogę i wektor odcinków, ale nic nie robi z samymi odcinkami.
+ * Usuwa daną drogę krajową i wektor odcinków, ale nic nie robi z samymi odcinkami.
  * Przyjmuje (void *) dla zgodności z generycznymi modułami.
  * @param[in,out] routeVoid - wskaźnik na drogę.
  */

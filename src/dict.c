@@ -64,7 +64,7 @@ static const uint64_t HASH_MODULO = 1770134209;
 static const uint64_t HASH_START = HASH_MODULO & 0xaaaaaaaa;
 /** Mnożnik do przemnażania kolejnych liter przy haszowaniu. */
 static const uint64_t HASH_MULTIPLIER = 257;
-/** Maska do ekstrakcji wartości z hasza, aby sxorować a bajtem. */
+/** Maska do ekstrakcji wartości z hasza, aby sxorować z bajtem. */
 static const uint64_t HASH_XOR_MASK = 0xff;
 
 

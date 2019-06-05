@@ -55,7 +55,7 @@ void deleteMap(Map *map);
 
 /**
  * @brief Dodaje do mapy odcinek drogi między dwoma różnymi miastami.
- * Jeśli któreś z podanych miast nie istnieje, to dodaje go do mapy, a następnie
+ * Jeśli któreś z podanych miast nie istnieje, to dodaje je do mapy, a następnie
  * dodaje do mapy odcinek drogi między tymi miastami.
  * @param[in,out] map    - wskaźnik na strukturę przechowującą mapę dróg;
  * @param[in] cityName1  - wskaźnik na napis reprezentujący nazwę miasta;

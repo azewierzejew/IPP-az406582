@@ -34,10 +34,10 @@ static Map *map = NULL;
 /**
  * @brief Ekstrahuje kolejne parametry z komendy.
  * Dla napisu będącego komendą wyciąga kolejne napisy pomiędzy średnikami.
- * Jeśli parametr @p string to z napisu, na którym ostatnio było operowane, zwraca kolejny parametr.
- * Jeśli nie to zaczyna nową parsowanie danego napisu.
+ * Jeśli parametr @p string jest @p NULL to z napisu, na którym ostatnio było operowane, zwraca kolejny parametr.
+ * Jeśli nie to zaczyna od nowa parsowanie podanego napisu.
  * Zamienia średniki na zerowe bajty i zwraca wskaźniki na kolejne pozycje w oryginalnym napisie.
- * @param[in,out] string - napis to ekstrahowania parametrów.
+ * @param[in,out] string - napis to ekstrahowania parametrów lub @p NULL jeśli ma być użyty poprzedni napis.
  * @return wskaźnik na odpowiednią pozycję w oryginalnym napisie lub @p NULL jeśli się skończył.
  */
 static char *getNextParameter(char *string);
@@ -118,12 +118,12 @@ static char *getNextParameter(char *string) {
 
 static bool stringToUnsigned(const char *str, unsigned *number) {
     char *endPtr;
-    errno = 0;
 
     /* Sprawdzamy czy nie zaczyna się białym znakiem bo strtoul tego nie testuje. */
     if (isspace(str[0])) {
         return false;
     }
+    errno = 0;
     long unsigned result = strtoul(str, &endPtr, 0);
     /* Nic nie skonwertowane lub zostało coś po liczbie. */
     if (endPtr == str || *endPtr != '\0') {
@@ -140,12 +140,12 @@ static bool stringToUnsigned(const char *str, unsigned *number) {
 
 static bool stringToInt(const char *str, int *number) {
     char *endPtr;
-    errno = 0;
 
     /* Sprawdzamy czy nie zaczyna się białym znakiem bo strtol tego nie testuje. */
     if (isspace(str[0])) {
         return false;
     }
+    errno = 0;
     long result = strtol(str, &endPtr, 0);
     /* Nic nie skonwertowane lub zostało coś po liczbie. */
     if (endPtr == str || *endPtr != '\0') {
@@ -300,8 +300,7 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
     roadStatuses = malloc(sizeof(RoadStatus) * roadCount);
     FAIL_IF(roadStatuses == NULL);
     for (size_t i = 0; i < roadCount; i++) {
-        roadStatuses[i] = getRoadStatus(map, cityNames[i], cityNames[i + 1],
-                                        roadLengths[i], roadYears[i]);
+        roadStatuses[i] = getRoadStatus(map, cityNames[i], cityNames[i + 1], roadLengths[i], roadYears[i]);
         FAIL_IF(roadStatuses[i] == ROAD_ILLEGAL);
     }
 
@@ -339,7 +338,7 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
 
 /**
  * Funkcja main programu.
- * @return kod wyjścia.
+ * @return Kod wyjścia.
  */
 int main() {
     map = newMap();
@@ -362,4 +361,5 @@ int main() {
 
     free(buff);
     deleteMap(map);
+    return 0;
 }

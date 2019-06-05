@@ -40,7 +40,7 @@ struct RouteSearchAnswerStruct {
  * Porównuje dystanse najpierw pod względem długości a potem pod względem daty ostatniej naprawy.
  * @param distance1 - pierwszy dystans;
  * @param distance2 - drugi dystans.
- * @return ujemna liczba jeśli pierwszy dystans jest lepszy, dodatnia w odwrotnym wypadku,
+ * @return @p -1 jeśli pierwszy dystans jest lepszy, @p 1 w odwrotnym wypadku,
  * @p 0 gdy są takie same.
  */
 int compareDistances(Distance distance1, Distance distance2);
@@ -48,8 +48,7 @@ int compareDistances(Distance distance1, Distance distance2);
 /**
  * @brief Szuka drogi pomiędzy dwoma miastami.
  * Dla danej mapy i miast końcowych szuka najbardziej optymalnej drogi.
- * Nie używa krawędzi o długości @p 0, również nie przechodzi przez miasta,
- * które śą końcem jakiejś użytej drogi.
+ * Nie przechodzi przez miasta, które są końcem jakiejś użytej drogi.
  * @param[in] map   - wskaźnik na strukturę przechowującą mapę dróg;
  * @param[in] city1 - wskaźnik na pierwsze miasto;
  * @param[in] city2 - wskaźnik na drugie miasto;
