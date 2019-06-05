@@ -16,10 +16,14 @@
  * Typ wyliczeniowy określający możliwe "stany" odcinka drogowego.
  */
 enum RoadStatusEnum {
-    ROAD_ILLEGAL,
-    ROAD_ADDABLE,
-    ROAD_REPAIRABLE,
-    ROAD_EXACT
+    /** Odcinek nie jest możliwy do uzyskania. */
+            ROAD_ILLEGAL,
+    /** Odcinka nie ma, ale można go stworzyć. */
+            ROAD_ADDABLE,
+    /** Odcinek jest, ale można zaktualizować datę naprawy. */
+            ROAD_REPAIRABLE,
+    /** Dokładnie taki odcinek istnieje. */
+            ROAD_EXACT
 };
 
 /**
@@ -84,11 +88,7 @@ bool repairRoad(Map *map, const char *cityName1, const char *cityName2, int repa
 
 /**
  * @brief Udostępnia stan drogi.
- * Dla danej mapy i informacji o odcinku zwraca następujące wartości:
- * @p ROAD_ILLEGAL jeśli nie da się uzyskać takiej odcinka,
- * @p ROAD_ADDABLE jeśli odcinka nie ma, ale można go stworzyć,
- * @p ROAD_REPAIRABLE jeśli odcinek jest, ale można zaktualizować datę naprawy,
- * @p ROAD_EXACT jeśli dokładnie taki odcinek istnieje,
+ * Dla danej mapy i informacji o odcinku zwraca odpowiedni status.
  * @param[in] map        - wskaźnik na strukturę przechowującą mapę dróg;
  * @param[in] cityName1  - wskaźnik na napis reprezentujący nazwę miasta;
  * @param[in] cityName2  - wskaźnik na napis reprezentujący nazwę miasta;
@@ -124,10 +124,10 @@ bool newRoute(Map *map, unsigned routeId, const char *cityName1, const char *cit
  * W danej mapie tworzy drogę krajową przechodzącą przez miasta o nazwach w @p cityNames.
  * Droga używa tylko istniejących odcinków, nie przechodzi przez żadne dodatkowe miasta i
  * przechodzi przez wszystkie miasta w zadanej kolejności.
- * @param[in,out] map TODO
- * @param[in] routeId
- * @param[in] cityNames
- * @param[in] cityCount
+ * @param[in,out] map   - wskaźnik na strukturę przechowującą mapę dróg;
+ * @param[in] routeId   - numer drogi krajowej;
+ * @param[in] cityNames - wskaźnik na tablicę z nazwami miast;
+ * @param[in] cityCount - liczba miast.
  * @return Wartość @p true, jeśli droga krajowa została utworzona.
  * Wartość @p false, jeśli wystąpił błąd: któryś z parametrów ma niepoprawną
  * wartość, istnieje już droga krajowa o podanym numerze, któreś z podanych
@@ -197,10 +197,9 @@ char const *getRouteDescription(Map *map, unsigned routeId);
 
 /**
  * @brief Usuwa drogę krajową z mapy.
- * TODO
  * @param[in,out] map - wskaźnik na strukturę przechowującą mapę dróg;
  * @param[in] routeId - numer drogi krajowej.
- * @return
+ * @return @p true lub @p false w zależności od poprawności argumentów.
  */
 bool removeRoute(Map *map, unsigned routeId);
 

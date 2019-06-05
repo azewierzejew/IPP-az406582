@@ -20,10 +20,16 @@
 #include <limits.h>
 #include <ctype.h>
 
+
+/* Zmienne globalne. */
+
 /**
- * Wskaźnik na strukturę mapy, na której wykonywane są operacje.
+ * Wskaźnik na strukturę mapy, na której wykonywane są wszystkie operacje.
  */
 static Map *map = NULL;
+
+
+/* Funkcje pomocnicze. */
 
 /**
  * @brief Ekstrahuje kolejne parametry z komendy.
@@ -82,6 +88,8 @@ static bool executeCommand(char *command, size_t len);
  */
 static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t parameterCount);
 
+
+/* Implementacja funkcji pomocniczych. */
 
 static char *getNextParameter(char *string) {
     static char *savePointer = NULL;
@@ -327,6 +335,7 @@ static bool executeCreateRoute(unsigned routeId, const char **parameters, size_t
     free(cityNames);
     return false;
 }
+
 
 /**
  * Funkcja main programu.

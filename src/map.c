@@ -1,3 +1,10 @@
+/** @file
+ * Implementacja klasy przechowującej mapę dróg krajowych
+ *
+ * @author Antoni Żewierżejew <azewierzejew@gmail.com>
+ * @date 9.04.2019
+ */
+
 #include "map.h"
 #include "map_types.h"
 #include "map_checkers.h"
@@ -18,55 +25,62 @@
 
 /* Funkcje pomocnicze. */
 
-static int compareSize_t(const void *aPtr, const void *bPtr);
+/**
+ * @brief Sprawdza czy na tablicy indeksów wszystkie są unikalne.
+ *
+ * @param ids
+ * @param idCount
+ * @return
+ */
+static bool checkForDuplicateIds(size_t **ids, size_t idCount);
 
-static bool checkForDuplicateIds(size_t *ids, size_t idCount);
-
+/**
+ * @brief Dodaje miasto do mapy.
+ * Dla danej nazwy miasta tworzy je i dodaje do słownika.
+ * Nie sprawdza poprawności nazwy.
+ * @param[in,out] map  - wskaźnik na mapę;
+ * @param[in] cityName - nazwa miasta.
+ * @return Wskaźnik na miasto jeśli sie udało dodać, @p NULL w p.p.
+ */
 static City *addCity(Map *map, const char *cityName);
+
+/**
+ * @brief Porównuje dwie liczby typu @p size_t.
+ * Przyjmuje (void *) dla zgodności z generycznymi modułami.
+ * Wskaźnik @p NULL jest uznawany jako liczba większa od każdej innej.
+ * @param[in] aPtr - wskaźnik na pierwszą liczbę.
+ * @param[in] bPtr - wskaźnik na drugą liczbę.
+ * @return @p -1, @p 0 lub @p 1 w zależności od stosunku liczb.
+ */
+static int compareSize_t(const void *aPtr, const void *bPtr);
 
 
 /* Implementacja funkcji pomocniczych. */
 
-static int compareSize_t(const void *aPtr, const void *bPtr) {
-    if (aPtr == NULL && bPtr == NULL) {
-        return 0;
-    }
-    if (aPtr == NULL) {
-        return -1;
-    }
-    if (bPtr == NULL) {
-        return 1;
+static bool checkForDuplicateIds(size_t **idsPtr, size_t idCount) {
+    if (idsPtr == NULL) {
+        return false;
     }
 
-    size_t a = *(size_t *) aPtr;
-    size_t b = *(size_t *) bPtr;
-    if (a < b) {
-        return -1;
-    }
-    if (a > b) {
-        return 1;
-    }
-    return 0;
-}
-
-static bool checkForDuplicateIds(size_t *ids, size_t idCount) {
+    size_t *ids = *idsPtr;
     if (ids == NULL && idCount == 0) {
         return true;
     }
     if (ids == NULL) {
         return false;
     }
-    if (idCount <= 1) {
-        return true;
-    }
 
     /* W posortowanym ciągu dwa takie same id będą obok siebie. */
     qsort(ids, idCount, sizeof(size_t), compareSize_t);
     for (size_t i = 0; i < idCount - 1; i++) {
         if (ids[i] == ids[i + 1]) {
+            free(ids);
+            *idsPtr = NULL;
             return false;
         }
     }
+    free(ids);
+    *idsPtr = NULL;
     return true;
 }
 
@@ -83,6 +97,28 @@ static City *addCity(Map *map, const char *cityName) {
 
     deleteCity(city);
     return NULL;
+}
+
+int compareSize_t(const void *aPtr, const void *bPtr) {
+    if (aPtr == NULL && bPtr == NULL) {
+        return 0;
+    }
+    if (aPtr == NULL) {
+        return 1;
+    }
+    if (bPtr == NULL) {
+        return -1;
+    }
+
+    size_t a = *(size_t *) aPtr;
+    size_t b = *(size_t *) bPtr;
+    if (a < b) {
+        return -1;
+    }
+    if (a > b) {
+        return 1;
+    }
+    return 0;
 }
 
 
@@ -265,9 +301,7 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
         lastCity = nextCity;
     }
     usedCities[cityCount - 1] = lastCity->id;
-    FAIL_IF(!checkForDuplicateIds(usedCities, cityCount));
-    free(usedCities);
-    usedCities = NULL;
+    FAIL_IF(!checkForDuplicateIds(&usedCities, cityCount));
 
     /* Po wykonaniu całej pętli w lastCity jest ostatnie miasto na drodze. */
     route = initRoute(&roads, firstCity, lastCity);
