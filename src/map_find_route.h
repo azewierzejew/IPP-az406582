@@ -5,10 +5,10 @@
  * @date 29.03.2019
  */
 
-#ifndef DROGI_FIND_ROUTE_H
-#define DROGI_FIND_ROUTE_H
+#ifndef DROGI_MAP_FIND_ROUTE_H
+#define DROGI_MAP_FIND_ROUTE_H
 
-#include "map_basics.h"
+#include "map_types.h"
 
 /** Struktura przechowująca łączny dystans dla drogi. */
 typedef struct DistanceStruct Distance;
@@ -64,4 +64,4 @@ int compareDistances(Distance distance1, Distance distance2);
  */
 RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vector *usedRoads);
 
-#endif /* DROGI_FIND_ROUTE_H */
+#endif /*DROGI_MAP_FIND_ROUTE_H*/

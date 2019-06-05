@@ -1,6 +1,7 @@
-#include "find_route.h"
+#include "map_find_route.h"
+#include "map_types.h"
+#include "map_graph.h"
 #include "heap.h"
-#include "map_basics.h"
 #include "utility.h"
 
 #include <inttypes.h>

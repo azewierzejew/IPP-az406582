@@ -8,8 +8,6 @@
 #ifndef DROGI_DICT_H
 #define DROGI_DICT_H
 
-#include "vector.h"
-
 #include <stdbool.h>
 
 /** Struktura przechowująca słownik. */

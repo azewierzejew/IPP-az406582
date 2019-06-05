@@ -1,10 +1,13 @@
 #define _GNU_SOURCE
 
 #include "map.h"
+#include "map_types.h"
+#include "map_graph.h"
+#include "map_route.h"
+#include "map_find_route.h"
+
 #include "vector.h"
 #include "dict.h"
-#include "map_basics.h"
-#include "find_route.h"
 #include "utility.h"
 
 #include <stdbool.h>
@@ -26,20 +29,6 @@ static const size_t MAX_ROUTE_ID_LENGTH = 3;
 
 /* Funkcje pomocnicze. */
 
-static City *initCity(const char *name, size_t id);
-
-static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2);
-
-static Route *initRoute(Vector **const roadsPtr, City *end1, City *end2);
-
-static void deleteRoad(void *roadVoid);
-
-static void deleteRoadHalfway(void *roadVoid);
-
-static void deleteCity(void *cityVoid);
-
-static void deleteRoute(void *routeVoid);
-
 static bool correctChar(char a);
 
 static bool checkName(const char *name);
@@ -50,8 +39,6 @@ static int compareSize_t(const void *aPtr, const void *bPtr);
 
 static bool checkForDuplicateIds(size_t *ids, size_t idCount);
 
-static Road *findRoad(const City *city1, const City *city2);
-
 static City *addCity(Map *map, const char *cityName);
 
 static void addNameToDescription(char **description, const char *name);
@@ -60,106 +47,8 @@ static void addUnsignedToDescription(char **description, unsigned number);
 
 static void addIntToDescription(char **description, int number);
 
-static bool checkRouteOrientation(const Route *route, const City *city1, const City *city2);
-
 
 /* Implementacja funkcji pomocniczych. */
-
-static City *initCity(const char *name, size_t id) {
-    City *city = malloc(sizeof(City));
-    FAIL_IF(city == NULL);
-
-    city->name = strdup(name);
-    city->roads = initVector();
-    city->id = id;
-
-    FAIL_IF(city->name == NULL || city->roads == NULL);
-
-    return city;
-
-    FAILURE:
-
-    if (city != NULL) {
-        free(city->name);
-    }
-    free(city);
-    return NULL;
-}
-
-static Road *initRoad(int builtYear, unsigned length, City *end1, City *end2) {
-    Road *road = malloc(sizeof(Road));
-    if (road == NULL) {
-        return NULL;
-    }
-
-    road->lastRepaired = builtYear;
-    road->length = length;
-    road->end1 = end1;
-    road->end2 = end2;
-    return road;
-}
-
-static Route *initRoute(Vector **const roadsPtr, City *end1, City *end2) {
-    if (roadsPtr == NULL) {
-        return NULL;
-    }
-
-    Route *route = malloc(sizeof(Route));
-    if (route == NULL) {
-        return NULL;
-    }
-
-    route->roads = *roadsPtr;
-    route->end1 = end1;
-    route->end2 = end2;
-    *roadsPtr = NULL;
-    return route;
-}
-
-static void deleteRoad(void *roadVoid) {
-    Road *road = roadVoid;
-    if (road == NULL) {
-        return;
-    }
-
-    free(road);
-}
-
-static void deleteRoadHalfway(void *roadVoid) {
-    Road *road = roadVoid;
-    if (road == NULL) {
-        return;
-    }
-
-    /* Droga musi być usunięta z obu końców i nie ma roku 0,
-     * więc rok naprawy 0 oznacza połowiczne usunięcie. */
-    if (road->lastRepaired == 0) {
-        deleteRoad(road);
-    } else {
-        road->lastRepaired = 0;
-    }
-}
-
-static void deleteCity(void *cityVoid) {
-    City *city = cityVoid;
-    if (city == NULL) {
-        return;
-    }
-
-    free(city->name);
-    deleteVector(city->roads, deleteRoadHalfway);
-    free(city);
-}
-
-static void deleteRoute(void *routeVoid) {
-    Route *route = routeVoid;
-    if (route == NULL) {
-        return;
-    }
-
-    deleteVector(route->roads, NULL);
-    free(route);
-}
 
 static bool correctChar(char a) {
     return !(0 <= a && a <= 31) && a != ';';
@@ -230,34 +119,6 @@ static bool checkForDuplicateIds(size_t *ids, size_t idCount) {
     return true;
 }
 
-static Road *findRoad(const City *city1, const City *city2) {
-    if (city1 == NULL || city2 == NULL) {
-        return NULL;
-    }
-
-    size_t len = sizeOfVector(city1->roads);
-
-    /* Dla wydajności zamieniane są miasta jeśli z drugiego wychodzi mniej odcinków. */
-    {
-        size_t len2 = sizeOfVector(city2->roads);
-        if (len > len2) {
-            const City *tmp = city1;
-            city1 = city2;
-            city2 = tmp;
-            len = len2;
-        }
-    }
-
-    Road *road = NULL;
-    Road **roads = (Road **) storageBlockOfVector(city1->roads);
-    for (size_t i = 0; i < len && road == NULL; i++) {
-        if (city2 == otherRoadEnd(roads[i], city1)) {
-            road = roads[i];
-        }
-    }
-    return road;
-}
-
 static City *addCity(Map *map, const char *cityName) {
     City *city = NULL;
     FAIL_IF(map == NULL);
@@ -292,34 +153,6 @@ static void addUnsignedToDescription(char **description, unsigned number) {
 static void addIntToDescription(char **description, int number) {
     sprintf(*description, "%d;", number);
     *description += strlen(*description);
-}
-
-static bool checkRouteOrientation(const Route *route, const City *city1, const City *city2) {
-    if (route == NULL || city1 == city2) {
-        return false;
-    }
-
-    const City *cityPair[2] = {city1, city2};
-    size_t correctCount = 0;
-
-    size_t roadCount = sizeOfVector(route->roads);
-    Road **roads = (Road **) storageBlockOfVector(route->roads);
-
-    City *position = route->end1;
-    for (size_t i = 0; i < roadCount; i++) {
-        if (position == cityPair[correctCount]) {
-            correctCount++;
-            if (correctCount == 2) {
-                return true;
-            }
-        }
-        position = otherRoadEnd(roads[i], position);
-    }
-    if (position == cityPair[1]) {
-        return true;
-    }
-
-    return false;
 }
 
 

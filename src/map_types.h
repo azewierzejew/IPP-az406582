@@ -5,8 +5,8 @@
  * @date 29.03.2019
  */
 
-#ifndef DROGI_MAP_BASICS_H
-#define DROGI_MAP_BASICS_H
+#ifndef DROGI_MAP_TYPES_H
+#define DROGI_MAP_TYPES_H
 
 
 #include "vector.h"
@@ -74,13 +74,4 @@ struct RouteStruct {
     Vector *roads;
 };
 
-
-/**
- * Wyznacza jaki jest drugi koniec odcinka drogowego.
- * @param[in] road - początek
- * @param[in] end
- * @return
- */
-City *otherRoadEnd(const Road *road, const City *end);
-
-#endif /* DROGI_MAP_BASICS_H */
+#endif /*DROGI_MAP_TYPES_H*/

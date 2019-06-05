@@ -21,20 +21,23 @@ set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
 
 # Wskazujemy pliki źródłowe.
 set(SOURCE_FILES
+        src/utility.c
+        src/utility.h
         src/vector.c
         src/vector.h
         src/dict.c
         src/dict.h
         src/heap.c
         src/heap.h
-        src/map_basics.c
-        src/map_basics.h
-        src/find_route.c
-        src/find_route.h
+        src/map_types.h
+        src/map_graph.c
+        src/map_graph.h
+        src/map_find_route.c
+        src/map_find_route.h
+        src/map_route.c
+        src/map_route.h
         src/map.c
         src/map.h
-        src/utility.c
-        src/utility.h
         src/map_main.c)
 
 # Wskazujemy plik wykonywalny.
