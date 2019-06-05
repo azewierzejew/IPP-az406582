@@ -2,6 +2,7 @@
 
 #include "map.h"
 #include "map_types.h"
+#include "map_checkers.h"
 #include "map_graph.h"
 #include "map_route.h"
 #include "map_find_route.h"
@@ -21,19 +22,12 @@
 
 /* Stałe globalne. */
 
-static const unsigned MAX_ROUTE_ID = 999;
 static const size_t MAX_LENGTH_LENGTH = 10;
 static const size_t MAX_YEAR_LENGTH = 11;
 static const size_t MAX_ROUTE_ID_LENGTH = 3;
 
 
 /* Funkcje pomocnicze. */
-
-static bool correctChar(char a);
-
-static bool checkName(const char *name);
-
-static bool checkRouteId(unsigned routeId);
 
 static int compareSize_t(const void *aPtr, const void *bPtr);
 
@@ -49,32 +43,6 @@ static void addIntToDescription(char **description, int number);
 
 
 /* Implementacja funkcji pomocniczych. */
-
-static bool correctChar(char a) {
-    return !(0 <= a && a <= 31) && a != ';';
-}
-
-static bool checkName(const char *name) {
-    if (name == NULL) {
-        return false;
-    }
-
-    size_t len = strlen(name);
-    if (len == 0) {
-        return false;
-    }
-
-    for (size_t i = 0; i < len; i++) {
-        if (!correctChar(name[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
-static bool checkRouteId(unsigned routeId) {
-    return routeId > 0 && routeId <= MAX_ROUTE_ID;
-}
 
 static int compareSize_t(const void *aPtr, const void *bPtr) {
     if (aPtr == NULL && bPtr == NULL) {

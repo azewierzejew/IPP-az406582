@@ -7,6 +7,7 @@
 
 #include "map_graph.h"
 #include "map_types.h"
+
 #include "utility.h"
 
 #include <string.h>

@@ -30,6 +30,8 @@ set(SOURCE_FILES
         src/heap.c
         src/heap.h
         src/map_types.h
+        src/map_checkers.c
+        src/map_checkers.h
         src/map_graph.c
         src/map_graph.h
         src/map_find_route.c

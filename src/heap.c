@@ -26,7 +26,7 @@ struct HeapStruct {
 /* Funkcje pomocnicze. */
 
 /**
- * @brief Zamienia w tablicy dwie warotści na podanych pozycjach.
+ * @brief Zamienia w tablicy dwie wartości na podanych pozycjach.
  * @param[in,out] array - wskaźnik na tablicę.
  * @param[in] index1    - indeks pierwszego elementu,
  * @param[in] index2    - indeks drugiego elementu.
