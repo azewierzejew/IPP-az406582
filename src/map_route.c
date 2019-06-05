@@ -37,30 +37,31 @@ void deleteRoute(void *routeVoid) {
     free(route);
 }
 
-bool checkRouteOrientation(const Route *route, const City *city1, const City *city2) {
+int checkRouteOrientation(const Route *route, const City *city1, const City *city2) {
     if (route == NULL || city1 == city2) {
-        return false;
+        return 0;
     }
-
-    const City *cityPair[2] = {city1, city2};
-    size_t correctCount = 0;
 
     size_t roadCount = sizeOfVector(route->roads);
     Road **roads = (Road **) storageBlockOfVector(route->roads);
 
     City *position = route->end1;
-    for (size_t i = 0; i < roadCount; i++) {
-        if (position == cityPair[correctCount]) {
-            correctCount++;
-            if (correctCount == 2) {
-                return true;
-            }
+    for (size_t i = 0; i < roadCount && position != NULL; i++) {
+        if (position == city1) {
+            return 1;
+        }
+        if (position == city2) {
+            return 2;
         }
         position = otherRoadEnd(roads[i], position);
     }
-    if (position == cityPair[1]) {
-        return true;
+
+    if (position == city1) {
+        return 1;
+    }
+    if (position == city2) {
+        return 2;
     }
 
-    return false;
+    return 0;
 }

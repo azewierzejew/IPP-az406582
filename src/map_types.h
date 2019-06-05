@@ -44,7 +44,7 @@ struct Map {
 
 /** Przechowuje informacje o drodze. */
 struct RoadStruct {
-    /** Rok ostatniego remontu lub budowy. Jeśli jest @p 0 to droga była usunięta w jednym końcu. */
+    /** Rok ostatniego remontu lub budowy. Jeśli jest @p 0 to droga jest w "zablokowanym" stanie. */
     int lastRepaired;
     /** Pierwszy koniec drogi. */
     City *end1;

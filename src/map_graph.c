@@ -1,4 +1,6 @@
 /** @file
+ * Implementacja modułu obsługującego graf mapy, czyli miasta i odcinki drogowe.
+ *
  * @author Antoni Żewierżejew <azewierzejew@gmail.com>
  * @date 05.06.2019
  */
@@ -56,7 +58,11 @@ City *initCity(const char *name, size_t id) {
     City *city = malloc(sizeof(City));
     FAIL_IF(city == NULL);
 
-    city->name = strdup(name);
+    if (name != NULL) {
+        city->name = strdup(name);
+    } else {
+        city->name = NULL;
+    }
     city->roads = initVector();
     city->id = id;
 
@@ -82,6 +88,20 @@ void deleteCity(void *cityVoid) {
     free(city->name);
     deleteVector(city->roads, deleteRoadHalfway);
     free(city);
+}
+
+City *otherRoadEnd(const Road *road, const City *end) {
+    if (road == NULL || road->lastRepaired == 0) {
+        return NULL;
+    }
+
+    if (road->end1 == end) {
+        return road->end2;
+    }
+    if (road->end2 == end) {
+        return road->end1;
+    }
+    return NULL;
 }
 
 Road *findRoad(const City *city1, const City *city2) {
@@ -111,18 +131,3 @@ Road *findRoad(const City *city1, const City *city2) {
     }
     return road;
 }
-
-City *otherRoadEnd(const Road *road, const City *end) {
-    if (road == NULL) {
-        return NULL;
-    }
-
-    if (road->end1 == end) {
-        return road->end2;
-    }
-    if (road->end2 == end) {
-        return road->end1;
-    }
-    return NULL;
-}
-

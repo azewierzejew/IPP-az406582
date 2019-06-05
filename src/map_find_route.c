@@ -163,12 +163,11 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
         Road **roads = (Road **) storageBlockOfVector(city->roads);
         for (size_t i = 0; i < roadCount; i++) {
             Road *road = roads[i];
-            /* [road->length == 0] oznacza że odcinek nie jest dostępny. */
-            if (road->length == 0) {
+            City *newCity = otherRoadEnd(road, city);
+            if (newCity == NULL) {
                 continue;
             }
 
-            City *newCity = otherRoadEnd(road, city);
             Distance newDistance = addRoadToDistance(distance, road);
 
             if (compareDistances(newDistance, distances[newCity->id]) < 0) {
@@ -209,14 +208,11 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
 
         for (size_t i = 0; i < roadCount; i++) {
             Road *road = roads[i];
-            if (road->length == 0) {
-                continue;
-            }
-
             City *newCity = otherRoadEnd(road, position);
             if (newCity == NULL) {
                 continue;
             }
+
             Distance newDistance = addRoadToDistance(distances[newCity->id], road);
             newDistance = combineDistances(newDistance, currentDistance);
 

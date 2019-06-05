@@ -412,7 +412,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
 
 bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     Road *road = NULL;
-    unsigned oldLength = 0;
+    int oldYear = 0;
     Vector **replacementParts = NULL;
     FAIL_IF(map == NULL);
     FAIL_IF(!checkName(cityName1) || !checkName(cityName2) || strcmp(cityName1, cityName2) == 0);
@@ -425,8 +425,8 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     FAIL_IF(road == NULL);
 
     /* Przeszukiwanie grafu nie będzie mogło użyć tego odcinka. */
-    oldLength = road->length;
-    road->length = 0;
+    oldYear = road->lastRepaired;
+    road->lastRepaired = 0;
 
     replacementParts = calloc(MAX_ROUTE_ID + 1, sizeof(Vector *));
     FAIL_IF(replacementParts == NULL);
@@ -437,9 +437,12 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
             continue;
         }
 
-        if (checkRouteOrientation(route, city1, city2)) {
+        int orientation = checkRouteOrientation(route, city1, city2);
+
+        if (orientation == 1) {
             replacementParts[id] = findRoute(map, city1, city2, route->roads).roads;
         } else {
+            FAIL_IF(orientation != 2);
             replacementParts[id] = findRoute(map, city2, city1, route->roads).roads;
         }
 
@@ -469,8 +472,8 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
         }
     }
     free(replacementParts);
-    if (road != NULL && oldLength != 0) {
-        road->length = oldLength;
+    if (road != NULL && oldYear != 0) {
+        road->lastRepaired = oldYear;
     }
     return false;
 }
