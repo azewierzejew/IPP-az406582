@@ -173,11 +173,13 @@ static uint64_t hashWord(const char *word) {
     size_t len = 0;
     while (word[len] != '\0') {
         unsigned char xor = hash & HASH_XOR_MASK;
+        /* Xor hasza z kodowanym bajtem, żeby hasze podobnych słów nie były w dokładnie tej samej kolejności. */
         uint64_t byte = (unsigned char) word[len] ^xor;
         hash = (hash * HASH_MULTIPLIER + byte) % HASH_MODULO;
         len++;
     }
 
+    /* Uwzględniamy długość słowa w haszu. */
     hash = (hash * HASH_MULTIPLIER + len) % HASH_MODULO;
     return hash;
 }
@@ -265,6 +267,7 @@ bool addToDict(Dict *dict, const char *word, void *value) {
     uint64_t hash = hashWord(word);
     Bucket **bucketPtr = findBucketPtr(&dict->root, hash);
     if (*bucketPtr == NULL) {
+        /* Jeśli nie ma odpowiedniego kubełka to należy go stworzyć. */
         *bucketPtr = initBucket(hash);
         if (*bucketPtr == NULL) {
             return false;

@@ -36,6 +36,7 @@ void deleteRoute(void *routeVoid);
 /**
  * @brief Sprawdza orientację drogi krajowej.
  * Zaczyna iść od początku drogi odpowiednimi odcinkami i szuka podanych miast.
+ * Pozwala na to, żeby jakieś odcinki na drodze były zablokowane, wtedy na nich przerywa.
  * @param[in] route - droga do sprawdzenia;
  * @param[in] city1 - pierwsze szukane miasto;
  * @param[in] city2 - drugie szukane miasto.
@@ -55,6 +56,7 @@ int checkRouteOrientation(const Route *route, const City *city1, const City *cit
  * Kolejność miast na liście jest taka, aby miasta @p city1 i @p city2, podane
  * w wywołaniu funkcji @ref newRoute, które utworzyło tę drogę krajową, zostały
  * wypisane w tej kolejności.
+ * Zakłada, że droga jest kompletna i nic nie jest zablokowane.
  * @param[in] route   - wskaźnik na drogę krajową;
  * @param[in] routeId - numer drogi krajowej.
  * @return Wskaźnik na napis lub @p NULL, gdy nie udało się zaalokować pamięci.

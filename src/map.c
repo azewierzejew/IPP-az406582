@@ -71,7 +71,7 @@ static bool checkForDuplicateIds(size_t **idsPtr, size_t idCount) {
         return false;
     }
 
-    /* W posortowanym ciągu dwa takie same id będą obok siebie. */
+    /* W posortowanym ciągu dwa takie same indeksy będą obok siebie. */
     qsort(ids, idCount, sizeof(size_t), compareSize_t);
     for (size_t i = 0; i < idCount - 1; i++) {
         if (ids[i] == ids[i + 1]) {
@@ -157,8 +157,7 @@ void deleteMap(Map *map) {
     free(map);
 }
 
-bool addRoad(Map *map, const char *cityName1, const char *cityName2,
-             unsigned length, int builtYear) {
+bool addRoad(Map *map, const char *cityName1, const char *cityName2, unsigned length, int builtYear) {
     City *city1 = NULL;
     City *city2 = NULL;
     Road *road = NULL;
@@ -169,6 +168,7 @@ bool addRoad(Map *map, const char *cityName1, const char *cityName2,
     city1 = valueInDict(map->cities, cityName1);
     city2 = valueInDict(map->cities, cityName2);
 
+    /* Jeśli nie ma miast to są dodawane. */
     city1 = city1 == NULL ? addCity(map, cityName1) : city1;
     city2 = city2 == NULL ? addCity(map, cityName2) : city2;
 
@@ -302,6 +302,7 @@ bool createRoute(Map *map, unsigned routeId, const char **cityNames, size_t city
         lastCity = nextCity;
     }
     usedCities[cityCount - 1] = lastCity->id;
+    /* checkForDuplicateIds usuwa tablicę i zmienia wskaźnik na NULL. */
     FAIL_IF(!checkForDuplicateIds(&usedCities, cityCount));
 
     /* Po wykonaniu całej pętli w lastCity jest ostatnie miasto na drodze. */
@@ -336,6 +337,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
         }
     }
 
+    /* Szukane są drogi do obu końców. */
     RouteSearchAnswer answer1 = findRoute(map, city, route->end1, route->roads);
     RouteSearchAnswer answer2 = findRoute(map, route->end2, city, route->roads);
     roads1 = answer1.roads;
@@ -351,8 +353,10 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
     bool connectToEnd1;
     if (answer1.count == 1) {
         if (answer2.count == 0) {
+            /* Tylko pierwsze szukanie znalazło coś dobrego. */
             connectToEnd1 = true;
         } else if (answer2.count == 1) {
+            /* Oba szukania znalazły jeden wynik. */
             int comparison = compareDistances(answer1.distance, answer2.distance);
 
             /* Ta sama długość, więc nie da sie wybrać. */
@@ -372,6 +376,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *cityName) {
         }
     } else { /* [answer1.count != 1] czyli [answer2.count == 1]. */
         if (answer1.count == 0) {
+            /* Tyko drugie szukanie znalazło dobry wynik. */
             connectToEnd1 = false;
         } else {
             /* Więcej niż jeden wynik w pierwszym szukaniu,
@@ -421,7 +426,7 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     road = findRoad(city1, city2);
     FAIL_IF(road == NULL);
 
-    /* Przeszukiwanie grafu nie będzie mogło użyć tego odcinka. */
+    /* Przeszukiwanie grafu nie będzie mogło użyć tego odcinka, bo jest "zablokowany". */
     oldYear = road->lastRepaired;
     road->lastRepaired = 0;
 
@@ -429,6 +434,7 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
     FAIL_IF(replacementParts == NULL);
 
     for (size_t id = 0; id <= MAX_ROUTE_ID; id++) {
+        /* Jeśli droga przechodzi przez odcinek to potrzeba alternatywy. */
         Route *route = map->routes[id];
         if (route == NULL || !existsInVector(route->roads, road)) {
             continue;
@@ -447,10 +453,9 @@ bool removeRoad(Map *map, const char *cityName1, const char *cityName2) {
         FAIL_IF(!prepareForReplacingValueWithVector(route->roads, road, replacementParts[id]));
     }
 
-
     for (size_t id = 0; id <= MAX_ROUTE_ID; id++) {
         if (map->routes[id] != NULL && replacementParts[id] != NULL) {
-            /* Jest pewność, że się powiedzie. */
+            /* Jest pewność, że się powiedzie, bo wektory są przygotowane. */
             replaceValueWithVector(map->routes[id]->roads, road, replacementParts[id]);
         }
     }

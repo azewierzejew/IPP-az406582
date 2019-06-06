@@ -46,7 +46,7 @@ void deleteRoadHalfway(void *roadVoid) {
     }
 
     /* Droga musi być usunięta z obu końców i nie ma roku 0,
-     * więc rok naprawy 0 oznacza połowiczne usunięcie. */
+     * więc rok naprawy 0 oznacza zablokowanie, droga usunięta z jednego końca jest blokowana. */
     if (road->lastRepaired == 0) {
         deleteRoad(road);
     } else {
@@ -72,10 +72,7 @@ City *initCity(const char *name, size_t id) {
 
     FAILURE:
 
-    if (city != NULL) {
-        free(city->name);
-    }
-    free(city);
+    deleteCity(city);
     return NULL;
 }
 

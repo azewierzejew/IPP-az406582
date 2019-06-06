@@ -76,6 +76,7 @@ static void addIntToDescription(char **description, int number) {
     *description += strlen(*description);
 }
 
+
 /* Funkcje z interfejsu. */
 
 Route *initRoute(Vector **roadsPtr, City *end1, City *end2) {

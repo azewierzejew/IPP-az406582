@@ -19,7 +19,7 @@
 /** Struktura dane potrzebne do wykorzystanie kopca w wyszukiwaniu najkrótszej drogi. */
 typedef struct RouteSearchHeapEntryStruct RouteSearchHeapEntry;
 
-/** Zawiera dane potrzebne do wykorzystania kopca, pozwalająca wybrać najkrótszą drogę z wielu. */
+/** Zawiera dane potrzebne do wykorzystania kopca w algorytmie Dijkstry. */
 struct RouteSearchHeapEntryStruct {
     /** Łączny dystans drogi. */
     Distance distance;
@@ -136,6 +136,12 @@ int compareDistances(Distance distance1, Distance distance2) {
 }
 
 RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vector *usedRoads) {
+    /*
+     * Do szukania najkrótszej ścieżki wykorzystywany jest algorytm Dijkstry.
+     * Jest to wariant kopcowy, czyli dystanse do rozpatrzenia wrzucamy na minimalny kopiec.
+     * Dystanse są wrzucane dla każdej poprawy jaką da się zrobić, czyli może jedno miasto być kilka razy na kopcu.
+     * Jednak wtedy dystanse będą różne (ściśle mniejsze z każdym kolejnym dodaniem).
+     */
     Distance *distances = NULL;
     bool *blockedCities = NULL;
     Heap *heap = NULL;
@@ -156,6 +162,7 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
         distances[i] = WORST_DISTANCE;
     }
 
+    /* Dla danych użytych już odcinków, nie można przechodzić przez miasta na tychże odcinkach. */
     blockedCities = calloc(cityCount, sizeof(bool));
     FAIL_IF(blockedCities == NULL);
     {
@@ -188,12 +195,15 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
         free(nextEntry);
 
         if (blockedCities[city->id] || compareDistances(distance, distances[city->id]) > 0) {
+            /* Nie można tędy przejść lub dystans jest nieoptymalny,
+             * czyli wierzchołek już był rozważony wcześniej. */
             continue;
         }
 
         distances[city->id] = distance;
 
         if (city == city1) {
+            /* Została już znaleziona cała ścieżka, więc nie ma potrzeby kontynuować. */
             break;
         }
 
@@ -209,6 +219,7 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
             Distance newDistance = addRoadToDistance(distance, road);
 
             if (compareDistances(newDistance, distances[newCity->id]) < 0) {
+                /* Da się uzyskać lepszy dystans do newCity, czyli dodawane jest wejście na kopiec. */
                 distances[newCity->id] = newDistance;
                 entry = initHeapEntry(newDistance, newCity);
 
@@ -239,6 +250,7 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
     Distance endDistance = distances[city1->id];
     answer.distance = endDistance;
     while (position != city2) {
+        /* Idąc od końca sprawdzane jest skąd mógł zostać uzyskany dystans i na ile sposobów. */
         City *newPosition = NULL;
         Distance newCurrentDistance = WORST_DISTANCE;
         size_t roadCount = sizeOfVector(position->roads);
@@ -268,6 +280,7 @@ RouteSearchAnswer findRoute(const Map *map, City *city1, City *city2, const Vect
         }
 
         if (newPosition == NULL) {
+            /* Nie ma żadnego rozwiązania. */
             answer.count = 0;
             FAIL;
         }

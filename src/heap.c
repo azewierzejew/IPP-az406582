@@ -18,7 +18,11 @@ struct HeapStruct {
     /** Komparator definiujący porządek w kopcu. */
     int (*comparator)(void *, void *);
 
-    /** Wektor elementów na kopcu. */
+    /**
+     * Wektor elementów na kopcu.
+     * Elementy są trzymane na tablicy, ale tworzą binarny kopiec.
+     * Synami "wierzchołka" w polu @p i są pola `(2 * i + 1)` i `(2 * i + 2)`.
+     */
     Vector *elements;
 };
 
@@ -116,6 +120,7 @@ bool addToHeap(Heap *heap, void **valuePtr) {
         return false;
     }
 
+    /* Dodawana wartość jest na końcu wektora, czyli w jakimś liściu. */
     void *value = *valuePtr;
     if (!pushToVector(heap->elements, value)) {
         return false;
@@ -124,6 +129,7 @@ bool addToHeap(Heap *heap, void **valuePtr) {
     size_t position = sizeOfVector(heap->elements) - 1;
     void **elements = storageBlockOfVector(heap->elements);
     while (position > 0) {
+        /* Dopóki kopiec nie jest poprawny, wartość jest przepychana w górę kopca. */
         size_t upPosition = (position - 1) / 2;
         if (heapCompare(heap, elements[position], elements[upPosition]) < 0) {
             swap(elements, position, upPosition);
@@ -147,6 +153,7 @@ void *getMinimumFromHeap(Heap *heap) {
 
     void **elements = storageBlockOfVector(heap->elements);
 
+    /* Zamieniany jest najmniejszy element z ostatnim. */
     void *minimum = elements[0];
     swap(elements, 0, elementCount - 1);
     popFromVector(heap->elements, minimum, NULL);
@@ -154,6 +161,7 @@ void *getMinimumFromHeap(Heap *heap) {
 
     size_t position = 0;
     while (position < elementCount) {
+        /* Dopóki kopiec nie jest poprawny, zamieniony element jest spychany w dół. */
         size_t son1Position = position * 2 + 1;
         size_t son2Position = position * 2 + 2;
 
