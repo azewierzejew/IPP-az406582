@@ -44,7 +44,7 @@ static inline bool resizeVector(Vector *vector, size_t len) {
         return false;
     }
 
-    void **newHolder = realloc(vector->holder, len * sizeof(void *));
+    void **newHolder = realloc(vector->holder, len * sizeof(vector->holder[0]));
     if (newHolder == NULL) {
         return false;
     }
@@ -89,7 +89,7 @@ bool pushToVector(Vector *vector, void *value) {
         return false;
     }
 
-    if (vector->space >= vector->count) {
+    if (vector->count >= vector->space) {
         if (!resizeVector(vector, vector->space * 2 + 2)) {
             return false;
         }
