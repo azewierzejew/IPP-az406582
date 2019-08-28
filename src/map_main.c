@@ -156,7 +156,7 @@ static bool stringToInt(const char *str, int *number) {
         return false;
     }
 
-    *number = result;
+    *number = (int) result;
     return true;
 }
 
